@@ -73,7 +73,7 @@ function prompt_command() {
 
 	# Virtualenv
 	local venv_prompt=
-	if [ -n "$VIRTUAL_ENV" ]; then
+	if [ -n "$VIRTUAL_ENV" ] && [[ "$(command -v python 2>/dev/null)" == "$VIRTUAL_ENV"* ]]; then
 		venv_prompt="($prompt_venv_symbol$(basename $VIRTUAL_ENV))"
 		venv_prompt="$(venv_theme $venv_prompt)"
 	fi
