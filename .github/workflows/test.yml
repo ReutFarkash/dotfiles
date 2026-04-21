@@ -24,11 +24,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        env:
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
       - name: Run setup (non-interactive)
-        # profile choice, username, and 'n' for the optional bash shell switch on macOS
+        # profile choice, username, 'n' for the optional bash shell switch on macOS
         run: printf "${{ matrix.choice }}\ntestuser\nn\n" | bash setup.sh
 
       - name: Verify symlinks
@@ -69,33 +67,34 @@ jobs:
             echo "✓ $f"
           done
 
-      - name: Source profile (minimal smoke test)
+      - name: Source profile and verify aliases
         run: |
+          # enable aliases in non-interactive bash, source directly in this shell
+          shopt -s expand_aliases
           source "$HOME/.user_config"
-          bash -c "
-            source $HOME/.user_config
-            source $HOME/.bash_aliases
-            echo '✓ .bash_aliases sourced'
-          "
+          source "$HOME/.bash_aliases"
+          echo "✓ .bash_aliases sourced"
 
-      - name: Verify expected aliases exist
-        run: |
-          source "$HOME/.user_config"
-          bash -c "
-            source $HOME/.user_config
-            source $HOME/.bash_aliases 2>/dev/null
-            type ll  >/dev/null || (echo '✗ ll missing' && exit 1) && echo '✓ ll'
-            type la  >/dev/null || (echo '✗ la missing' && exit 1) && echo '✓ la'
-            type gs  >/dev/null || (echo '✗ gs missing' && exit 1) && echo '✓ gs'
-            type gp  >/dev/null || (echo '✗ gp missing' && exit 1) && echo '✓ gp'
-          "
+          check_alias() {
+            local name="$1"
+            alias "$name" >/dev/null 2>&1 || { echo "✗ $name not defined"; exit 1; }
+            echo "✓ $name"
+          }
+
+          check_alias ll
+          check_alias la
+          check_alias gs
+          check_alias gp
 
       - name: Verify standard/full extras
         if: matrix.profile != 'minimal'
         run: |
-          bash -c "
-            source $HOME/.user_config
-            source $HOME/.bash_aliases 2>/dev/null
-            type graph  >/dev/null || (echo '✗ graph missing' && exit 1) && echo '✓ graph'
-            type useful >/dev/null || (echo '✗ useful missing' && exit 1) && echo '✓ useful'
-          "
+          shopt -s expand_aliases
+          source "$HOME/.user_config"
+          source "$HOME/.bash_aliases"
+
+          alias graph >/dev/null 2>&1 || { echo "✗ graph not defined"; exit 1; }
+          echo "✓ graph"
+
+          declare -f useful >/dev/null 2>&1 || { echo "✗ useful function not defined"; exit 1; }
+          echo "✓ useful"
