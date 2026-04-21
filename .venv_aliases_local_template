@@ -1,0 +1,13 @@
+
+if [ "$DEBUG" == true ]; then
+    scriptpath="${CUR_DIR}/${BASH_ARGV[0]}"
+    echo "running $scriptpath"
+fi
+
+# example:
+
+# my_venv="${PROJECT_PATH}my_venv/"
+# alias act_my_venv="source ${my_venv}bin/activate"
+# alias start_my_venv="cd ${PROJECT_PATH} && act_my_venv && code ."
+# dir_aliases+=("start_my_venv")
+

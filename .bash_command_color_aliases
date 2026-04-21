@@ -1,0 +1,84 @@
+
+
+if [ "$DEBUG" == true ]; then
+    scriptpath="${CUR_DIR}/${BASH_ARGV[0]}"
+    echo "running $scriptpath"
+fi
+
+if [[ $COLORTERM = gnome-* && $TERM = xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
+	export TERM='gnome-256color';
+elif infocmp xterm-256color >/dev/null 2>&1; then
+	export TERM='xterm-256color';
+fi;
+
+
+# Src: https://github.com/voku/dotfiles/blob/master/.bash_profile
+# enable ls colors
+  if [[ "$DISABLE_LS_COLORS" != "true" ]]; then
+    if [[ "$SYSTEM_TYPE" == "NET_BSD" ]]; then
+      # On NetBSD, test if "gls" (GNU ls) is installed (this one supports colors);
+      # otherwise, leave ls as is, because NetBSD's ls doesn't support -G
+      gls --color -d . &>/dev/null 2>&1 && COLORFLAG="--color=tty"
+    elif [[ "$SYSTEM_TYPE" == "OPEN_BSD" ]]; then
+      # On OpenBSD, test if "colorls" is installed (this one supports colors);
+      # otherwise, leave ls as is, because OpenBSD's ls doesn't support -G
+      colorls -G -d . &>/dev/null 2>&1 && COLORFLAG="-G"
+    elif [[ "$SYSTEM_TYPE" == "OSX" ]]; then
+      # on OS X use "-G"
+      COLORFLAG="-G"
+    elif ls --color -d . &>/dev/null 2>&1; then
+      COLORFLAG="--color"
+      if [[ "$SYSTEM_TYPE" == "LINUX" || "$SYSTEM_TYPE" == "CYGWIN" ]]; then
+        COLORFLAG="--color=auto"
+      fi
+    fi
+  fi
+
+  # Colorize the grep command output for ease of use (good for log files)
+  alias grep="grep $COLORFLAG"
+  alias egrep="egrep $COLORFLAG"
+  alias fgrep="fgrep $COLORFLAG"
+
+# ------------------------------------------------------------------------------
+# | List Directory Contents (ls)                                               |
+# ------------------------------------------------------------------------------
+
+# list all files colorized in long format
+alias l="ls -lhF $COLORFLAG"
+# list all files with directories
+alias ldir="l -R"
+# Show hidden files
+alias l.="ls -dlhF .* $COLORFLAG"
+alias ldot="l."
+# use colors
+alias ls="ls -F $COLORFLAG"
+# display only files & dir in a v-aling view
+alias l1="ls -1 $COLORFLAG"
+# displays all files and directories in detail
+alias la="ls -laFh $COLORFLAG"
+# displays all files and directories in detail (without "." and without "..")
+alias lA="ls -lAFh $COLORFLAG"
+alias lsa="la"
+# displays all files and directories in detail with newest-files at bottom
+alias lr="ls -laFhtr $COLORFLAG"
+# show last 10 recently changed files
+alias lt="ls -altr | grep -v '^d' | tail -n 10"
+# show files and directories (also in sub-dir) that was touched in the last hour
+alias lf="find ./* -ctime -1 | xargs ls -ltr $COLORFLAG"
+# displays files and directories in detail
+alias ll="ls -lFh --group-directories-first $COLORFLAG"
+# shows the most recently modified files at the bottom of
+alias llr="ls -lartFh --group-directories-first $COLORFLAG"
+# list only directories
+alias lsd="ls -lFh $COLORFLAG | grep --color=never '^d'"
+# sort by file-size
+alias lS="ls -1FSshr $COLORFLAG"
+# displays files and directories
+alias dir="ls --format=vertical $COLORFLAG"
+# displays more information about files and directories
+alias vdir="ls --format=long $COLORFLAG"
+
+# la + ll
+alias lla="la -l"
+alias lal="la -l"
+

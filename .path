@@ -1,0 +1,4 @@
+# Homebrew first
+eval "$(/opt/homebrew/bin/brew shellenv)"
+# Your other PATH exports AFTER (e.g., custom bins)
+# Avoid export PATH=$PATH:...; use absolute prepends

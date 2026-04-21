@@ -1,0 +1,14 @@
+# Logs
+daemon.log
+*.log
+
+# Editor workspace files
+*.code-workspace
+
+# Per-machine files (use templates to create these)
+.local_aliases
+.venv_aliases_local
+.user_config
+
+# macOS
+.DS_Store
