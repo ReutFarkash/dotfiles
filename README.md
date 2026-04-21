@@ -1,14 +1,14 @@
 # dotfiles
 
-Bash dotfiles for macOS and Linux/WSL. Two profiles: **full** (developer setup) and **minimal** (clean shell for everyday use).
+Bash dotfiles for macOS and Linux/WSL. Three profiles: **full**, **standard**, and **minimal**.
 
 ---
 
 ## Profiles
 
-### `minimal` — for general use
+### `minimal` — basics only
 
-A clean, simple shell with no dev tooling. Good for anyone who just wants a better terminal without the complexity.
+A clean, simple shell. Good for anyone who just wants a safer, friendlier terminal without any extras.
 
 What you get:
 - Navigation shortcuts (`..`, `...`, `~`)
@@ -16,17 +16,24 @@ What you get:
 - Safety nets — `rm`, `cp`, `mv` ask before overwriting
 - Quick shortcuts: `reload` to re-source config, `myip` to check your IP, `path` to print PATH entries
 - Basic git: `gs` (status), `gp` (pull), `glog` (visual log)
-- Clean prompt showing current directory
+- Prompt showing current directory
+
+### `standard` — everyday use with git and venv support
+
+Everything in minimal, plus:
+- Custom prompt with git branch status and active venv indicator
+- `graph` — visual git log (`git log --oneline --graph --decorate --all`)
+- `gc`, `ga`, `gd` — quick commit, add, diff shortcuts
+- Machine-specific alias loading via `~/.local_aliases`
+- Venv shortcut scaffolding via `~/.venv_aliases_local`
+- `useful` command — prints a summary of available commands on shell start
 
 ### `full` — developer setup
 
-Everything in minimal, plus:
-- Custom prompt with git branch, status indicators, and venv/conda display
+Everything in standard, plus:
 - Windows/WSL path detection (`Cpath`, `Epath`, etc.) for cross-platform work
-- Git workflow tools: `graph` (visual log), submodule helpers, git state save/restore (`lazygit.sh`)
+- Git submodule tools and state save/restore (`lazygit.sh`)
 - Bash completion for the [Hydra](https://hydra.cc) ML framework
-- venv alias scaffolding (via `~/.venv_aliases_local`)
-- Machine-specific alias loading (via `~/.local_aliases`)
 - ActivityWatch terminal time-tracking integration
 - `useful` / `more_useful` command cheatsheets
 
@@ -42,7 +49,7 @@ bash ~/dotfiles/setup.sh
 ```
 
 The script will ask:
-1. **Profile** — choose `1` (full) or `2` (minimal)
+1. **Profile** — choose `1` (full), `2` (standard, default), or `3` (minimal)
 2. **Username** — used to personalise the prompt; defaults to your system username
 
 It then creates `~/.user_config`, copies the template files, and installs symlinks. Open a new terminal when done.

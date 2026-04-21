@@ -15,13 +15,15 @@ echo ""
 
 # ── 1. Profile ────────────────────────────────────────────────────────────────
 echo "Which profile would you like?"
-echo "  1) full    — everything (git tools, dev aliases, custom prompt)"
-echo "  2) minimal — basics only (ls shortcuts, simple prompt)"
+echo "  1) full     — everything (dev aliases, WSL/Windows paths, git submodule tools)"
+echo "  2) standard — git tools, custom prompt, venv scaffolding, machine-specific aliases"
+echo "  3) minimal  — basics only (ls shortcuts, safety nets, simple git)"
 echo ""
-read -rp "Enter 1 or 2 [default: 1]: " profile_choice
+read -rp "Enter 1, 2, or 3 [default: 2]: " profile_choice
 case "$profile_choice" in
-  2) DOTFILES_PROFILE="minimal" ;;
-  *) DOTFILES_PROFILE="full" ;;
+  1) DOTFILES_PROFILE="full" ;;
+  3) DOTFILES_PROFILE="minimal" ;;
+  *) DOTFILES_PROFILE="standard" ;;
 esac
 echo "→ Profile: $DOTFILES_PROFILE"
 echo ""
@@ -112,7 +114,9 @@ echo "Next steps:"
 echo "  1. Open a new terminal (or run: source ~/.bash_profile)"
 echo "  2. Run 'useful' or 'more_useful' to see available commands"
 if [[ "$DOTFILES_PROFILE" == "minimal" ]]; then
-echo "  3. Your profile is 'minimal' — clean and simple."
+echo "  3. Your profile is 'minimal' — clean and simple. Run 'useful' for a command list."
+elif [[ "$DOTFILES_PROFILE" == "standard" ]]; then
+echo "  3. Your profile is 'standard' — run 'useful' for a command list. Edit ~/.local_aliases for machine-specific paths."
 else
 echo "  3. Your profile is 'full' — edit ~/.local_aliases for machine-specific paths."
 fi

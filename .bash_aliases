@@ -11,6 +11,11 @@ if [[ "${DOTFILES_PROFILE}" == "minimal" ]]; then
     return 0 2>/dev/null || exit 0
 fi
 
+if [[ "${DOTFILES_PROFILE}" == "standard" ]]; then
+    [[ -f "${DOTFILES_REPO}/profiles/standard.sh" ]] && source "${DOTFILES_REPO}/profiles/standard.sh"
+    return 0 2>/dev/null || exit 0
+fi
+
 is_gitbash_admin() {
     if net session &>/dev/null; then
         echo "true"
