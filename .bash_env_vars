@@ -10,7 +10,7 @@ if [[ -z "${DEBUG+x}" ]]; then
     export DEBUG=false
 fi
 
-if [[ ! -v PRINTGIT ]]; then
+if [ -z "${PRINTGIT+x}" ]; then
     [ -n "$PS1" ] && echo "Setting PRINTGIT=false"
     export PRINTGIT=false
 fi
