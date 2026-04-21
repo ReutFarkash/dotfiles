@@ -16,6 +16,9 @@ if [[ "${DOTFILES_PROFILE}" == "standard" ]]; then
     return 0 2>/dev/null || exit 0
 fi
 
+# Full profile: load base aliases first so navigation, ls, safety, and git basics are always present
+[[ -f "${DOTFILES_REPO}/profiles/minimal.sh" ]] && source "${DOTFILES_REPO}/profiles/minimal.sh"
+
 is_gitbash_admin() {
     if net session &>/dev/null; then
         echo "true"
