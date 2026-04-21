@@ -30,8 +30,10 @@ mkdir -p "${archive_dir}"
 for file in "${FILES[@]}"; do
         home_link="${HOME}/$(basename "$file")"
         archive_link="$archive_dir"
-        echo "mv \"${home_link}\" \"${archive_link}\""
-        mv "${home_link}" "${archive_link}"
+        if [[ -e "$home_link" || -L "$home_link" ]]; then
+            echo "mv \"${home_link}\" \"${archive_link}\""
+            mv "${home_link}" "${archive_link}"
+        fi
 done
 # Run the function for dotfiles in the home directory and git scripts in ~/git_scripts
 create_symlinks "${HOME}" "${FILES[@]}"

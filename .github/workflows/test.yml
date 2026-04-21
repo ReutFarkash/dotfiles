@@ -1,0 +1,99 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  setup:
+    name: ${{ matrix.profile }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        profile: [minimal, standard, full]
+        include:
+          - profile: minimal
+            choice: '3'
+          - profile: standard
+            choice: '2'
+          - profile: full
+            choice: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run setup (non-interactive)
+        # profile choice, username, and 'n' for the optional bash shell switch on macOS
+        run: printf "${{ matrix.choice }}\ntestuser\nn\n" | bash setup.sh
+
+      - name: Verify symlinks
+        run: |
+          for f in .bashrc .bash_profile .bash_aliases .bash_prompt .bash_env_vars \
+                   .bash_command_color_aliases .bash_logout .path .aw-terminal-hooks.bash; do
+            if [ -L "$HOME/$f" ]; then
+              echo "✓ ~/$f -> $(readlink $HOME/$f)"
+            else
+              echo "✗ ~/$f is missing or not a symlink" && exit 1
+            fi
+          done
+          for f in git_scripts/graph_submodules.sh git_scripts/lazygit.sh git_scripts/gitsubmodules_scripts.sh; do
+            if [ -L "$HOME/$f" ]; then
+              echo "✓ ~/$f"
+            else
+              echo "✗ ~/$f is missing or not a symlink" && exit 1
+            fi
+          done
+
+      - name: Verify user_config
+        run: |
+          test -f "$HOME/.user_config" || (echo "✗ ~/.user_config missing" && exit 1)
+          source "$HOME/.user_config"
+          echo "DOTFILES_PROFILE=$DOTFILES_PROFILE"
+          [ "$DOTFILES_PROFILE" = "${{ matrix.profile }}" ] || \
+            (echo "✗ Expected profile '${{ matrix.profile }}', got '$DOTFILES_PROFILE'" && exit 1)
+          echo "✓ Profile correct"
+
+      - name: Syntax check all shell files
+        run: |
+          find . -name "*.sh" | while read f; do
+            bash -n "$f" || (echo "✗ Syntax error in $f" && exit 1)
+            echo "✓ $f"
+          done
+          for f in .bash_aliases .bash_prompt .bash_env_vars .bash_command_color_aliases .bashrc .bash_profile .path; do
+            bash -n "$f" || (echo "✗ Syntax error in $f" && exit 1)
+            echo "✓ $f"
+          done
+
+      - name: Source profile (minimal smoke test)
+        run: |
+          source "$HOME/.user_config"
+          bash -c "
+            source $HOME/.user_config
+            source $HOME/.bash_aliases
+            echo '✓ .bash_aliases sourced'
+          "
+
+      - name: Verify expected aliases exist
+        run: |
+          source "$HOME/.user_config"
+          bash -c "
+            source $HOME/.user_config
+            source $HOME/.bash_aliases 2>/dev/null
+            type ll  >/dev/null || (echo '✗ ll missing' && exit 1) && echo '✓ ll'
+            type la  >/dev/null || (echo '✗ la missing' && exit 1) && echo '✓ la'
+            type gs  >/dev/null || (echo '✗ gs missing' && exit 1) && echo '✓ gs'
+            type gp  >/dev/null || (echo '✗ gp missing' && exit 1) && echo '✓ gp'
+          "
+
+      - name: Verify standard/full extras
+        if: matrix.profile != 'minimal'
+        run: |
+          bash -c "
+            source $HOME/.user_config
+            source $HOME/.bash_aliases 2>/dev/null
+            type graph  >/dev/null || (echo '✗ graph missing' && exit 1) && echo '✓ graph'
+            type useful >/dev/null || (echo '✗ useful missing' && exit 1) && echo '✓ useful'
+          "
