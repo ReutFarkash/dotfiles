@@ -24,10 +24,7 @@ prompt_symbol="❯"
 prompt_clean_symbol="🌟"
 prompt_dirty_symbol="💢"
 prompt_venv_symbol="🐇"
-prompt_conda_symbol="🦎"
-
 alias venv_theme=cyan_fg
-alias conda_theme=blue_fg
 alias git_dirty_theme=red_fg
 alias git_clean_theme=grey_fg # green_fg
 alias user_root_theme=red_fg

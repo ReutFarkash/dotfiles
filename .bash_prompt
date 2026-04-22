@@ -78,13 +78,6 @@ function prompt_command() {
 		venv_prompt="$(venv_theme $venv_prompt)"
 	fi
 
-	# Conda
-	local conda_prompt=
-	if [ ! -z "$CONDA_DEFAULT_ENV" ]
-	then
-		conda_prompt="$(conda_theme $prompt_conda_symbol$CONDA_DEFAULT_ENV)"
-	fi
-
 	# Only show username if not default
 	local user_prompt=
 	[ "$USER" != "$local_username" ] && user_prompt="$(user_theme $USER)"
@@ -95,10 +88,10 @@ function prompt_command() {
 
 	local cur_path="$(dir_theme $(shortenPath $(pwd) $DIR_PATH_LEN))"
 
-	first_line="$venv_prompt$conda_prompt $user_prompt $host_prompt$ICON_DIR $cur_path$git_prompt "
+	first_line="${venv_prompt:+$venv_prompt }${user_prompt:+$user_prompt }${host_prompt}$ICON_DIR $cur_path"
 	
 	if [ "$PRINTGIT" == true ]; then
-    	first_line+="$(prompt_git_func )";
+    	first_line+=" $(prompt_git_func)";
 	fi
 	
 

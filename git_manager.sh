@@ -51,10 +51,11 @@ fancygit_git_is_only_local_branch() {
     local remote_ahead_num=$(echo $remote_info | grep -Eo 'ahead [0-9]{1,}' | grep -Eo '[0-9]{1,}')
     local remote_behind_num=$(echo $remote_info | grep -Eo 'behind [0-9]{1,}' | grep -Eo '[0-9]{1,}')
 
-    
-
-    echo "(↓$remote_behind_num↑$remote_ahead_num)"
-    return 
+    local sync_info=
+    [ -n "$remote_behind_num" ] && sync_info="${sync_info}↓${remote_behind_num}"
+    [ -n "$remote_ahead_num" ] && sync_info="${sync_info}↑${remote_ahead_num}"
+    [ -n "$sync_info" ] && echo "($sync_info)"
+    return
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
