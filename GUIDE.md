@@ -235,6 +235,82 @@ MY_VAR="hello" some_command
 
 ---
 
+### Pipes and redirection
+
+Every command has three standard streams: **stdin** (input), **stdout** (output), and **stderr** (errors). By default all three connect to your terminal. Pipes and redirection let you rewire them.
+
+#### Pipes — `|`
+
+A pipe sends the stdout of one command into the stdin of the next.
+
+```bash
+ls -l | less                        # page through a long listing
+cat file.txt | grep "error"         # filter lines containing "error"
+ps aux | grep python | head -5      # chain as many as you like
+```
+
+Think of `|` as "and feed the output into".
+
+#### Redirecting stdout — `>` and `>>`
+
+```bash
+echo "hello" > output.txt           # write stdout to a file (overwrites)
+echo "world" >> output.txt          # append stdout to a file
+ls -l > listing.txt                 # save any command's output to a file
+```
+
+`>` creates or overwrites. `>>` creates or appends. Never use `>` when you mean `>>` — it silently erases the file first.
+
+#### Redirecting stderr — `2>`
+
+stderr uses file descriptor 2. Errors go there so they don't pollute stdout.
+
+```bash
+python3 script.py 2> errors.log     # save errors, print normal output
+python3 script.py 2> /dev/null      # suppress errors entirely
+```
+
+`/dev/null` is a black hole — anything written there is discarded.
+
+#### Redirecting both stdout and stderr
+
+```bash
+python3 script.py > output.log 2>&1     # both streams → same file
+python3 script.py &> output.log         # shorthand for the same thing
+python3 script.py > out.log 2> err.log  # split them into separate files
+```
+
+`2>&1` means "send stderr (2) to wherever stdout (1) is currently going."
+
+#### Reading stdin from a file — `<`
+
+```bash
+sort < names.txt                    # feed file contents to stdin
+sqlite3 mydb.db < schema.sql        # run SQL from a file
+```
+
+Less common than `>` but useful for commands that expect interactive input.
+
+#### `tee` — write to a file and still see the output
+
+```bash
+make 2>&1 | tee build.log           # see output in terminal AND save it
+```
+
+`tee` splits the stream: one copy goes to the file, one to stdout. Combine with `2>&1` to capture errors too.
+
+#### Putting it together
+
+```bash
+# Find all Python files, count them, save the count, and show it:
+find . -name "*.py" | wc -l | tee py_count.txt
+
+# Run tests, save all output (stdout + stderr), and page through it:
+pytest 2>&1 | tee test.log | less
+```
+
+---
+
 ## 3. Editing files — nano
 
 ```bash
