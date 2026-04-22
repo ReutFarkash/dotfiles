@@ -31,10 +31,11 @@ jobs:
       - name: macOS — run with current user (skip CLT/Homebrew installs)
         if: runner.os == 'macOS'
         run: |
-          # Inputs: target user=$USER, n×3 (skip any optional installs that prompt),
-          # empty line (accept default HTTPS repo URL from git remote).
-          # Extra n/empty lines are harmless — unused stdin is silently discarded.
-          printf "%s\nn\nn\nn\n\n" "$USER" | bash pre_setup_admin.sh
+          # Inputs (fixed order): username, repo URL, then n×3 for any optional
+          # install prompts. Repo URL comes second so its position is predictable
+          # regardless of which tools are already installed on the runner.
+          printf "%s\nhttps://github.com/ReutFarkash/dotfiles\nn\nn\nn\n" "$USER" \
+            | bash pre_setup_admin.sh
 
       - name: macOS — debug state after run
         if: runner.os == 'macOS'

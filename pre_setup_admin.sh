@@ -54,6 +54,28 @@ fi
 echo "→ Target user: $target_user"
 echo ""
 
+# ── 2b. Repo URL ──────────────────────────────────────────────────────────────
+# Ask upfront — before optional install prompts — so its position in the
+# input stream is predictable (always the second read, regardless of what
+# tools are already installed).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_raw_url=$(git -C "$SCRIPT_DIR" config --get remote.origin.url 2>/dev/null || true)
+if [[ "$_raw_url" =~ ^git@([^:]+):(.+)$ ]]; then
+    _default_url="https://${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+elif [[ -n "$_raw_url" ]]; then
+    _default_url="$_raw_url"
+else
+    _default_url="https://github.com/YOUR_USERNAME/dotfiles.git"
+fi
+echo "The dotfiles repo will be cloned into: /Users/$target_user/dotfiles"
+echo "Using HTTPS so no SSH keys are required."
+echo "(Press Enter to use: $_default_url)"
+echo ""
+read -rp "Repo URL [$_default_url]: " repo_url
+repo_url="${repo_url:-$_default_url}"
+echo "→ Repo: $repo_url"
+echo ""
+
 # ── 3. Xcode Command Line Tools ───────────────────────────────────────────────
 echo "Checking Xcode Command Line Tools..."
 if xcode-select -p >/dev/null 2>&1; then
@@ -150,31 +172,10 @@ fi
 echo ""
 
 # ── 9. Clone dotfiles repo for target user ────────────────────────────────────
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_HOME="/Users/$target_user"
 CLONE_DEST="$TARGET_HOME/dotfiles"
 
 echo "Dotfiles repo setup for $target_user..."
-
-# Derive a default HTTPS URL from this repo's remote.
-# Normalize SSH remote (git@github.com:User/repo.git) → HTTPS so the clone
-# doesn't need SSH keys set up for the target user.
-_raw_url=$(git -C "$SCRIPT_DIR" config --get remote.origin.url 2>/dev/null || true)
-if [[ "$_raw_url" =~ ^git@([^:]+):(.+)$ ]]; then
-    _default_url="https://${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
-elif [[ -n "$_raw_url" ]]; then
-    _default_url="$_raw_url"
-else
-    _default_url="https://github.com/YOUR_USERNAME/dotfiles.git"
-fi
-
-echo ""
-echo "  The dotfiles repo will be cloned into: $CLONE_DEST"
-echo "  Using HTTPS so no SSH keys are required."
-echo "  (Press Enter to use: $_default_url)"
-echo ""
-read -rp "Repo URL [$_default_url]: " repo_url
-repo_url="${repo_url:-$_default_url}"
 
 # Resolve git's full path now, before sudo. sudo uses a restricted PATH
 # that may not include /opt/homebrew/bin where git lives on Apple Silicon.
