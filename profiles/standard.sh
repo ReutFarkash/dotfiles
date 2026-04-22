@@ -24,6 +24,9 @@ if [ -f ~/.venv_aliases_local ]; then
     source ~/.venv_aliases_local
 fi
 
+# ── Git prompt ────────────────────────────────────────────────────────────────
+export PRINTGIT=true
+
 # ── Help ──────────────────────────────────────────────────────────────────────
 useful() {
     echo ''

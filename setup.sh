@@ -83,7 +83,43 @@ echo "Installing dotfile symlinks..."
 bash "$SCRIPT_DIR/bootstrap.sh"
 echo ""
 
-# ── 7. Optionally switch default shell to bash (macOS only) ──────────────────
+# ── 7. Git identity ───────────────────────────────────────────────────────────
+echo "Checking Git identity..."
+git_name=$(git config --global user.name 2>/dev/null || echo "")
+git_email=$(git config --global user.email 2>/dev/null || echo "")
+
+if [[ -n "$git_name" && -n "$git_email" ]]; then
+  echo "Git identity already set:"
+  echo "  Name:  $git_name"
+  echo "  Email: $git_email"
+  read -rp "Keep these? [Y/n]: " keep_git
+  if [[ "$keep_git" =~ ^[Nn]$ ]]; then
+    git_name=""
+    git_email=""
+  else
+    echo "→ Keeping existing Git identity."
+  fi
+fi
+
+if [[ -z "$git_name" || -z "$git_email" ]]; then
+  echo "Git uses your name and email to label every commit you make."
+  echo ""
+  read -rp "Your full name (e.g. Jane Smith): " git_name_input
+  read -rp "Your email address: " git_email_input
+  if [[ -n "$git_name_input" && -n "$git_email_input" ]]; then
+    git config --global user.name "$git_name_input"
+    git config --global user.email "$git_email_input"
+    git config --global init.defaultBranch main
+    echo "→ Git identity set."
+  else
+    echo "→ Skipped. Set later with:"
+    echo "   git config --global user.name 'Your Name'"
+    echo "   git config --global user.email 'you@example.com'"
+  fi
+fi
+echo ""
+
+# ── 8. Optionally switch default shell to bash (macOS only) ──────────────────
 if [[ "$(uname)" == "Darwin" ]]; then
   current_shell="$(dscl . -read /Users/"$USER" UserShell 2>/dev/null | awk '{print $2}')"
   if [[ "$current_shell" != *bash* ]]; then
@@ -112,12 +148,22 @@ echo "======================================"
 echo ""
 echo "Next steps:"
 echo "  1. Open a new terminal (or run: source ~/.bash_profile)"
-echo "  2. Run 'useful' or 'more_useful' to see available commands"
+echo "  2. Run 'useful' to see available commands"
 if [[ "$DOTFILES_PROFILE" == "minimal" ]]; then
-echo "  3. Your profile is 'minimal' — clean and simple. Run 'useful' for a command list."
+  echo "  3. Your profile is 'minimal' — clean and simple."
 elif [[ "$DOTFILES_PROFILE" == "standard" ]]; then
-echo "  3. Your profile is 'standard' — run 'useful' for a command list. Edit ~/.local_aliases for machine-specific paths."
+  echo "  3. Your profile is 'standard'. Edit ~/.local_aliases for machine-specific paths."
 else
-echo "  3. Your profile is 'full' — edit ~/.local_aliases for machine-specific paths."
+  echo "  3. Your profile is 'full'. Run 'more_useful' for a full command list."
+  echo "     Edit ~/.local_aliases for machine-specific paths."
+fi
+echo ""
+
+# ── 9. Cheat sheet ────────────────────────────────────────────────────────────
+if [[ -f "$SCRIPT_DIR/generate_cheatsheet.sh" ]]; then
+  read -rp "Generate a personal command cheat sheet in your home folder? [Y/n]: " gen_cs
+  if [[ ! "$gen_cs" =~ ^[Nn]$ ]]; then
+    bash "$SCRIPT_DIR/generate_cheatsheet.sh"
+  fi
 fi
 echo ""

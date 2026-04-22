@@ -24,7 +24,7 @@ for file in ~/.{path,bash_env_vars,bash_aliases,bash_prompt,profile,bash_logout,
 done;
 unset file;
 
-source ~/manager.sh
+[[ -f ~/manager.sh ]] && source ~/manager.sh
 
 # Case-insensitive globbing (used in pathname expansion)
 shopt -s nocaseglob;

@@ -1,0 +1,106 @@
+name: Test (Windows / Git Bash)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+
+jobs:
+  setup:
+    name: ${{ matrix.profile }} / windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [minimal, standard]
+        include:
+          - profile: minimal
+            choice: '3'
+          - profile: standard
+            choice: '2'
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run setup (non-interactive)
+        run: printf "${{ matrix.choice }}\ntestuser\n\n\nn\n" | bash setup.sh
+
+      - name: Verify user_config
+        run: |
+          test -f "$HOME/.user_config" || (echo "✗ ~/.user_config missing" && exit 1)
+          source "$HOME/.user_config"
+          echo "DOTFILES_PROFILE=$DOTFILES_PROFILE"
+          [ "$DOTFILES_PROFILE" = "${{ matrix.profile }}" ] || \
+            (echo "✗ Expected '${{ matrix.profile }}', got '$DOTFILES_PROFILE'" && exit 1)
+          echo "✓ Profile correct"
+          test -n "$DOTFILES_REPO" || (echo "✗ DOTFILES_REPO not set" && exit 1)
+          echo "✓ DOTFILES_REPO = $DOTFILES_REPO"
+
+      - name: Syntax check all shell files
+        run: |
+          find . -name "*.sh" | while read f; do
+            bash -n "$f" || (echo "✗ Syntax error in $f" && exit 1)
+            echo "✓ $f"
+          done
+          for f in .bash_aliases .bash_env_vars .bashrc .bash_profile .path; do
+            bash -n "$f" || (echo "✗ Syntax error in $f" && exit 1)
+            echo "✓ $f"
+          done
+
+      - name: Verify symlinks (profile-aware)
+        run: |
+          source "$HOME/.user_config"
+
+          check_link() {
+            if [ -L "$HOME/$1" ]; then
+              echo "✓ ~/$1"
+            else
+              echo "✗ ~/$1 is missing or not a symlink" && exit 1
+            fi
+          }
+
+          for f in .bashrc .bash_profile .bash_aliases .bash_env_vars .bash_logout .path; do
+            check_link "$f"
+          done
+
+          if [ "$DOTFILES_PROFILE" != "minimal" ]; then
+            for f in .bash_prompt prompt_utils.sh git_manager.sh stats_manager.sh theme_manager.sh manager.sh shorten_path.sh; do
+              check_link "$f"
+            done
+          fi
+
+      - name: Source profile and verify base aliases
+        run: |
+          shopt -s expand_aliases
+          source "$HOME/.user_config"
+          source "$HOME/.bash_aliases"
+          echo "✓ .bash_aliases sourced"
+
+          check_alias() {
+            alias "$1" >/dev/null 2>&1 || { echo "✗ $1 not defined"; exit 1; }
+            echo "✓ $1"
+          }
+          check_alias ll
+          check_alias la
+          check_alias gs
+          check_alias gp
+
+      - name: Verify useful function
+        run: |
+          shopt -s expand_aliases
+          source "$HOME/.user_config"
+          source "$HOME/.bash_aliases"
+          declare -f useful >/dev/null 2>&1 || { echo "✗ useful not defined"; exit 1; }
+          echo "✓ useful defined"

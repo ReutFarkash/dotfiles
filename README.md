@@ -1,6 +1,8 @@
 # dotfiles
 
-Bash dotfiles for macOS and Linux/WSL. Three profiles: **full**, **standard**, and **minimal**.
+Bash dotfiles for macOS, Linux/WSL, and Windows (Git Bash). Three profiles — pick the one that fits.
+
+CI: ![macOS + Ubuntu](https://github.com/ReutFarkash/dotfiles/actions/workflows/test.yml/badge.svg) ![Windows](https://github.com/ReutFarkash/dotfiles/actions/workflows/test-windows.yml/badge.svg)
 
 ---
 
@@ -8,123 +10,210 @@ Bash dotfiles for macOS and Linux/WSL. Three profiles: **full**, **standard**, a
 
 ### `minimal` — basics only
 
-A clean, simple shell. Good for anyone who just wants a safer, friendlier terminal without any extras.
+A clean, safer shell. Good for anyone who just wants a friendlier terminal without extras.
 
-What you get:
-- Navigation shortcuts (`..`, `...`, `~`)
-- Improved `ls` (`l`, `la`, `ll`, `lr` for newest-first)
-- Safety nets — `rm`, `cp`, `mv` ask before overwriting
-- Quick shortcuts: `reload` to re-source config, `myip` to check your IP, `path` to print PATH entries
-- Basic git: `gs` (status), `gp` (pull), `glog` (visual log)
-- Prompt showing current directory
+- Navigation: `..`, `...`, `~`
+- Improved listing: `l`, `la`, `ll`, `lr` (newest at bottom)
+- Safety nets: `rm`, `cp`, `mv` ask before overwriting
+- Shortcuts: `reload`, `myip`, `path`
+- Git basics: `gs` (status), `gp` (pull), `glog` (visual log)
 
-### `standard` — everyday use with git and venv support
+### `standard` — everyday use *(default)*
 
 Everything in minimal, plus:
-- Custom prompt with git branch status and active venv indicator
-- `graph` — visual git log (`git log --oneline --graph --decorate --all`)
-- `gc`, `ga`, `gd` — quick commit, add, diff shortcuts
-- Machine-specific alias loading via `~/.local_aliases`
-- Venv shortcut scaffolding via `~/.venv_aliases_local`
-- `useful` command — prints a summary of available commands on shell start
+
+- Custom prompt showing git branch, git status icons, and active venv
+- `graph` — visual git log (all branches)
+- `gc`, `ga`, `gd` — quick commit, add, diff
+- Machine-specific aliases via `~/.local_aliases`
+- Venv shortcuts via `~/.venv_aliases_local`
+- `useful` — prints available commands on shell start
 
 ### `full` — developer setup
 
 Everything in standard, plus:
-- Windows/WSL path detection (`Cpath`, `Epath`, etc.) for cross-platform work
+
+- Windows/WSL path detection (`Cpath`, `Epath`, etc.)
 - Git submodule tools and state save/restore (`lazygit.sh`)
-- Bash completion for the [Hydra](https://hydra.cc) ML framework
+- Bash completion for [Hydra](https://hydra.cc) ML framework
 - ActivityWatch terminal time-tracking integration
-- `useful` / `more_useful` command cheatsheets
+- `useful` and `more_useful` command cheatsheets
 
 ---
 
 ## Setup
 
-### New machine (your own)
+### New machine
 
 ```bash
 git clone git@github.com:ReutFarkash/dotfiles.git ~/dotfiles
 bash ~/dotfiles/setup.sh
 ```
 
-The script will ask:
-1. **Profile** — choose `1` (full), `2` (standard, default), or `3` (minimal)
-2. **Username** — used to personalise the prompt; defaults to your system username
+`setup.sh` is interactive and walks through everything. It will ask:
 
-It then creates `~/.user_config`, copies the template files, and installs symlinks. Open a new terminal when done.
+1. **Profile** — `1` full, `2` standard (default), `3` minimal
+2. **Username** — personalises the prompt; defaults to your system username
+3. **Git identity** — name and email for commit attribution (skipped if already set)
+4. **Shell switch** *(macOS only)* — offer to change default shell to bash
+5. **Cheat sheet** — offer to generate `~/shell-cheatsheet.md` and `~/shell-cheatsheet.txt`
 
-### Adding a user account on someone else's machine
+The repo can live anywhere — not just `~/dotfiles`. `DOTFILES_REPO` in `~/.user_config` tracks the path.
 
-If you're setting up a separate macOS/Linux user account (e.g. for SSH access to another machine):
+### Windows (Git Bash)
 
-1. Create the user account if it doesn't already exist
-2. Log in as that user (locally or via SSH)
-3. Clone and run setup — same as above, just from that user's home directory
+Open **Git Bash** (not PowerShell or cmd) and run the same command. The script detects the platform and skips macOS-specific steps. Symlink creation requires either administrator rights or Developer Mode enabled in Windows settings.
 
-Each user account gets its own `~/.user_config`, `~/.local_aliases`, and symlinks pointing to their own copy of the repo. Accounts are fully independent.
+### Re-running setup
+
+`setup.sh` is safe to re-run. It skips steps that are already done (`~/.user_config` already exists, git identity already set, etc.).
 
 ---
 
 ## What gets installed
 
-`setup.sh` does the following, in order:
+`bootstrap.sh` creates symlinks based on the selected profile. Only files the profile actually uses are linked — minimal users don't get hydra completion or the prompt system in their home directory.
 
-| Step | What |
-|---|---|
-| Ask profile & username | Stored in `~/.user_config` |
-| Create `~/.local_aliases` | Copied from `.local_aliases_template` — edit here for machine-specific paths |
-| Create `~/.venv_aliases_local` | Copied from `.venv_aliases_local_template` — add venv shortcuts here |
-| Install symlinks | Runs `bootstrap.sh`, which links all dotfiles into `~/` and `~/git_scripts/` |
-| Optionally switch shell to bash | macOS only — prompts before changing |
+### Symlinked files by profile
 
-### Symlinked files
-
-**Home directory (`~/`):**
+**All profiles (minimal+):**
 
 | File | Purpose |
-|---|---|
-| `.bashrc` | Core session config — loads on every interactive shell |
-| `.bash_profile` | Login shell entry point — sources all dotfiles |
-| `.bash_aliases` | Main aliases and shell functions (full profile) |
-| `.bash_prompt` | Custom prompt with git status and venv indicator |
+|------|---------|
+| `.bashrc` | Core session config |
+| `.bash_profile` | Login shell entry point |
+| `.bash_aliases` | Profile dispatcher — sources the right profile on startup |
 | `.bash_env_vars` | Environment variable defaults (`DEBUG`, `PRINTGIT`) |
-| `.bash_command_color_aliases` | Color and formatting shortcuts |
 | `.bash_logout` | Cleanup on logout |
 | `.path` | PATH extensions |
-| `.aw-terminal-hooks.bash` | ActivityWatch terminal integration |
-| `prompt_utils.sh` | Color/styling functions used by the prompt |
-| `theme_manager.sh` | Prompt theme definitions |
-| `stats_manager.sh` | Git stats for the prompt |
-| `shorten_path.sh` | Shortens long paths in the prompt |
-| `manager.sh` | Loads the above utility scripts |
-| `git_manager.sh` | Git helper aliases and functions |
-| `hydra_completion.sh` | Tab completion for Hydra CLI |
 
-**`~/git_scripts/`:**
+**Standard and full only (prompt system):**
 
 | File | Purpose |
-|---|---|
-| `graph_submodules.sh` | Visual git log across submodules |
-| `lazygit.sh` | Save and restore full git state (branch, stash, submodules) |
-| `gitsubmodules_scripts.sh` | Submodule workflow notes and helpers |
+|------|---------|
+| `.bash_prompt` | Custom prompt with git status and venv indicator |
+| `manager.sh` | Loads the prompt utility scripts |
+| `prompt_utils.sh` | Color/styling functions |
+| `theme_manager.sh` | Prompt theme definitions |
+| `git_manager.sh` | Git helpers and branch detection for the prompt |
+| `stats_manager.sh` | Git stats (staged, unstaged counts) |
+| `shorten_path.sh` | Shortens long paths in the prompt display |
+
+**Full only:**
+
+| File | Purpose |
+|------|---------|
+| `.bash_command_color_aliases` | Color and formatting shortcuts |
+| `.aw-terminal-hooks.bash` | ActivityWatch terminal integration |
+| `hydra_completion.sh` | Tab completion for the Hydra CLI |
+| `~/git_scripts/graph_submodules.sh` | Visual git log across submodules |
+| `~/git_scripts/lazygit.sh` | Save and restore full git state |
+| `~/git_scripts/gitsubmodules_scripts.sh` | Submodule workflow helpers |
 
 ### Not symlinked (machine-specific, created from templates)
 
 | File | Purpose |
-|---|---|
+|------|---------|
 | `~/.user_config` | Profile, username, `DOTFILES_REPO` path — generated by `setup.sh` |
 | `~/.local_aliases` | Machine-specific paths and aliases — edit freely, never committed |
 | `~/.venv_aliases_local` | Per-machine venv activation shortcuts — edit freely, never committed |
 
 ---
 
+## Utility scripts
+
+These can be run at any time from the repo root.
+
+### `audit_home.sh` — health check
+
+Scans the home directory and reports issues. **Never changes anything.**
+
+```bash
+bash ~/dotfiles/audit_home.sh
+```
+
+Checks:
+- Dangling symlinks (broken targets, depth 3)
+- Dotfile symlink health — broken links, plain files that should be symlinks, stale `DOTFILES_REPO` path
+- Shell config conflicts (`.bash_profile` + `.profile`, bash vs. zsh)
+- SSH key security — permissions, algorithm, key strength
+- Git configuration — `user.name`, `user.email`, `init.defaultBranch`, `credential.helper`
+- Leftover tool remnants (`.nvm`, `.rvm`, `.pyenv`, `.cargo` for uninstalled tools)
+- Large files (>50 MB) sitting directly in `~/`
+
+### `cleanup_home.sh` — interactive archiver
+
+Walks through old or broken files and moves approved items to `~/archive/cleanup_<timestamp>/`. **Nothing is deleted** — everything goes to the archive and can be restored.
+
+```bash
+bash ~/dotfiles/cleanup_home.sh          # interactive
+bash ~/dotfiles/cleanup_home.sh --dry-run  # preview only, no changes
+```
+
+What it looks for:
+- Dangling symlinks
+- Dotfiles that are plain files instead of symlinks (leftover from before this repo was set up)
+- Common old-setup leftovers (`.bash_profile.bak`, `.aliases`, `.exports`, `.extra`, etc.)
+
+After archiving, run `bootstrap.sh` to re-link any dotfiles that were removed.
+
+### `generate_cheatsheet.sh` — command reference
+
+Generates a personal command reference based on your current profile.
+
+```bash
+bash ~/dotfiles/generate_cheatsheet.sh
+```
+
+Produces two files in `~/`:
+- `shell-cheatsheet.md` — Markdown, renders nicely in any viewer
+- `shell-cheatsheet.txt` — plain text, readable with `less ~/shell-cheatsheet.txt`
+
+Both files contain the same content, formatted for their medium. Content is profile-specific — minimal users get the minimal command set, standard users get the full standard set, etc.
+
+Also runs automatically at the end of `setup.sh` (optional).
+
+---
+
+## SSH and Git setup
+
+These scripts are coming soon:
+
+- `ssh_setup.sh` — guided setup for GitHub SSH keys, SSH agent, and `~/.ssh/config` host aliases. Works on macOS and Windows (Git Bash). Privilege-aware: explains clearly what requires admin and what doesn't.
+- `pre_setup_admin.sh` — run this as admin *before* handing a machine to a new user. Handles things that need elevated rights (adding bash to `/etc/shells`, running `chsh`).
+
+---
+
 ## Customisation
 
-**Machine-specific paths and aliases** → edit `~/.local_aliases`
+**Machine-specific aliases and paths** → edit `~/.local_aliases`
 
 **Venv shortcuts** → edit `~/.venv_aliases_local` (see `.venv_aliases_local_template` for the pattern)
 
-**Switch profiles** → edit `~/.user_config`, change `DOTFILES_PROFILE` to `full` or `minimal`, then run `reload`
+**Switch profiles** → edit `DOTFILES_PROFILE` in `~/.user_config`, then run `reload`; or re-run `setup.sh` after deleting `~/.user_config`
+
+**Refresh symlinks after a profile change** → `bash ~/dotfiles/bootstrap.sh`
+
+**Refresh cheat sheet after a profile change** → `bash ~/dotfiles/generate_cheatsheet.sh`
 
 **Update dotfiles** → `cd ~/dotfiles && git pull`, then open a new terminal
+
+---
+
+## CI
+
+Tests run on push to `main` and on all pull requests.
+
+**`test.yml`** — macOS and Ubuntu, all three profiles:
+- Runs `setup.sh` non-interactively
+- Verifies profile-aware symlinks (minimal doesn't get full-only files, etc.)
+- Syntax checks all shell files
+- Sources the profile and verifies base aliases (`ll`, `la`, `gs`, `gp`, `reload`, `myip`)
+- Verifies `useful` is defined for every profile
+- Verifies all commands listed in `useful()` output are actually defined
+- Verifies `PRINTGIT=true` for standard and full profiles
+- Runs `setup.sh` a second time to confirm idempotency
+
+**`test-windows.yml`** — Windows (Git Bash), minimal and standard profiles:
+- Same core checks as above
+- Only triggers when code files change (skips on doc-only commits via `paths-ignore`)

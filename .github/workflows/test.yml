@@ -26,26 +26,52 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run setup (non-interactive)
-        # profile choice, username, 'n' for the optional bash shell switch on macOS
-        run: printf "${{ matrix.choice }}\ntestuser\nn\n" | bash setup.sh
+        # profile choice, username, skip git identity (empty name/email), 'n' for bash shell switch, 'n' for cheat sheet
+        run: printf "${{ matrix.choice }}\ntestuser\n\n\nn\nn\n" | bash setup.sh
 
-      - name: Verify symlinks
+      - name: Verify symlinks (profile-aware)
         run: |
-          for f in .bashrc .bash_profile .bash_aliases .bash_prompt .bash_env_vars \
-                   .bash_command_color_aliases .bash_logout .path .aw-terminal-hooks.bash; do
-            if [ -L "$HOME/$f" ]; then
-              echo "✓ ~/$f -> $(readlink $HOME/$f)"
+          source "$HOME/.user_config"
+
+          check_link() {
+            if [ -L "$HOME/$1" ]; then
+              echo "✓ ~/$1 -> $(readlink $HOME/$1)"
             else
-              echo "✗ ~/$f is missing or not a symlink" && exit 1
+              echo "✗ ~/$1 is missing or not a symlink" && exit 1
             fi
+          }
+
+          # Base files — all profiles
+          for f in .bashrc .bash_profile .bash_aliases .bash_env_vars .bash_logout .path; do
+            check_link "$f"
           done
-          for f in git_scripts/graph_submodules.sh git_scripts/lazygit.sh git_scripts/gitsubmodules_scripts.sh; do
-            if [ -L "$HOME/$f" ]; then
-              echo "✓ ~/$f"
-            else
-              echo "✗ ~/$f is missing or not a symlink" && exit 1
-            fi
-          done
+
+          # Prompt system — standard and full only
+          if [ "$DOTFILES_PROFILE" != "minimal" ]; then
+            for f in .bash_prompt prompt_utils.sh git_manager.sh stats_manager.sh theme_manager.sh manager.sh shorten_path.sh; do
+              check_link "$f"
+            done
+          fi
+
+          # Full-only files
+          if [ "$DOTFILES_PROFILE" = "full" ]; then
+            for f in .bash_command_color_aliases .aw-terminal-hooks.bash hydra_completion.sh; do
+              check_link "$f"
+            done
+            for f in git_scripts/graph_submodules.sh git_scripts/lazygit.sh git_scripts/gitsubmodules_scripts.sh; do
+              check_link "$f"
+            done
+          fi
+
+          # Minimal must NOT have prompt system files (they shouldn't be linked)
+          if [ "$DOTFILES_PROFILE" = "minimal" ]; then
+            for f in hydra_completion.sh .aw-terminal-hooks.bash .bash_command_color_aliases; do
+              if [ -L "$HOME/$f" ]; then
+                echo "✗ ~/$f should not be symlinked for minimal profile" && exit 1
+              fi
+              echo "✓ ~/$f correctly absent for minimal"
+            done
+          fi
 
       - name: Verify user_config
         run: |
@@ -55,6 +81,9 @@ jobs:
           [ "$DOTFILES_PROFILE" = "${{ matrix.profile }}" ] || \
             (echo "✗ Expected profile '${{ matrix.profile }}', got '$DOTFILES_PROFILE'" && exit 1)
           echo "✓ Profile correct"
+          test -n "$DOTFILES_REPO" || (echo "✗ DOTFILES_REPO not set in ~/.user_config" && exit 1)
+          test -d "$DOTFILES_REPO"  || (echo "✗ DOTFILES_REPO points to missing path: $DOTFILES_REPO" && exit 1)
+          echo "✓ DOTFILES_REPO = $DOTFILES_REPO"
 
       - name: Syntax check all shell files
         run: |
@@ -62,29 +91,51 @@ jobs:
             bash -n "$f" || (echo "✗ Syntax error in $f" && exit 1)
             echo "✓ $f"
           done
-          for f in .bash_aliases .bash_prompt .bash_env_vars .bash_command_color_aliases .bashrc .bash_profile .path; do
+          for f in .bash_aliases .bash_env_vars .bashrc .bash_profile .path; do
             bash -n "$f" || (echo "✗ Syntax error in $f" && exit 1)
             echo "✓ $f"
           done
 
-      - name: Source profile and verify aliases
+      - name: Source profile and verify base aliases (all profiles)
         run: |
-          # enable aliases in non-interactive bash, source directly in this shell
           shopt -s expand_aliases
           source "$HOME/.user_config"
           source "$HOME/.bash_aliases"
           echo "✓ .bash_aliases sourced"
 
           check_alias() {
-            local name="$1"
-            alias "$name" >/dev/null 2>&1 || { echo "✗ $name not defined"; exit 1; }
-            echo "✓ $name"
+            alias "$1" >/dev/null 2>&1 || { echo "✗ $1 not defined"; exit 1; }
+            echo "✓ $1"
           }
-
           check_alias ll
           check_alias la
           check_alias gs
           check_alias gp
+          check_alias reload
+          check_alias myip
+
+      - name: Verify useful function (all profiles)
+        run: |
+          shopt -s expand_aliases
+          source "$HOME/.user_config"
+          source "$HOME/.bash_aliases"
+          declare -f useful >/dev/null 2>&1 || { echo "✗ useful function not defined for ${{ matrix.profile }} profile"; exit 1; }
+          echo "✓ useful defined"
+
+      - name: Verify aliases listed in useful() all exist
+        run: |
+          shopt -s expand_aliases
+          source "$HOME/.user_config"
+          source "$HOME/.bash_aliases"
+          declare -f useful >/dev/null 2>&1 || exit 0
+          # Extract indented short-words from useful() output (the command column)
+          useful | grep -E '^\s{2,4}[a-z_]+\s' | awk '{print $1}' | while read cmd; do
+            alias "$cmd" >/dev/null 2>&1 || declare -f "$cmd" >/dev/null 2>&1 || {
+              echo "✗ '$cmd' is listed in useful() but is not defined"
+              exit 1
+            }
+            echo "✓ $cmd"
+          done
 
       - name: Verify standard/full extras
         if: matrix.profile != 'minimal'
@@ -96,5 +147,14 @@ jobs:
           alias graph >/dev/null 2>&1 || { echo "✗ graph not defined"; exit 1; }
           echo "✓ graph"
 
-          declare -f useful >/dev/null 2>&1 || { echo "✗ useful function not defined"; exit 1; }
-          echo "✓ useful"
+          [ "$PRINTGIT" = "true" ] || { echo "✗ PRINTGIT is not true for ${{ matrix.profile }} profile"; exit 1; }
+          echo "✓ PRINTGIT=true"
+
+      - name: Verify setup idempotency (run twice)
+        run: |
+          printf "${{ matrix.choice }}\ntestuser\n\n\nn\nn\n" | bash setup.sh
+          echo "✓ Second run completed without error"
+          source "$HOME/.user_config"
+          [ "$DOTFILES_PROFILE" = "${{ matrix.profile }}" ] || \
+            (echo "✗ Profile changed after second run" && exit 1)
+          echo "✓ Profile unchanged after second run"
