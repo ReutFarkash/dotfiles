@@ -31,9 +31,10 @@ jobs:
       - name: macOS — run with current user (skip CLT/Homebrew installs)
         if: runner.os == 'macOS'
         run: |
-          # Inputs: target user=$USER, skip Xcode CLT (n), skip Homebrew (n), skip brew bash (n)
-          # The /etc/shells and chsh steps will actually run.
-          printf "%s\nn\nn\nn\n" "$USER" | bash pre_setup_admin.sh
+          # Inputs: target user=$USER, n×3 (skip any optional installs that prompt),
+          # empty line (accept default HTTPS repo URL from git remote).
+          # Extra n/empty lines are harmless — unused stdin is silently discarded.
+          printf "%s\nn\nn\nn\n\n" "$USER" | bash pre_setup_admin.sh
 
       - name: macOS — verify /etc/shells contains a bash entry
         if: runner.os == 'macOS'
@@ -49,11 +50,26 @@ jobs:
           [[ "$shell" == *bash* ]] || { echo "✗ Shell is not bash: $shell"; exit 1; }
           echo "✓ Default shell is bash"
 
-      - name: macOS — idempotency (re-run produces no errors)
+      - name: macOS — verify dotfiles were cloned with correct ownership
         if: runner.os == 'macOS'
         run: |
-          printf "%s\nn\nn\nn\n" "$USER" | bash pre_setup_admin.sh
+          clone_dest="$HOME/dotfiles"
+          test -d "$clone_dest" || { echo "✗ $clone_dest not found"; exit 1; }
+          echo "✓ $clone_dest exists"
+          test -f "$clone_dest/setup.sh" || { echo "✗ setup.sh missing from clone"; exit 1; }
+          echo "✓ setup.sh present"
+          owner=$(stat -f "%Su" "$clone_dest")
+          [ "$owner" = "$USER" ] || { echo "✗ Owner is '$owner', expected '$USER'"; exit 1; }
+          echo "✓ Owner is $USER"
+
+      - name: macOS — idempotency (re-run skips existing clone without error)
+        if: runner.os == 'macOS'
+        run: |
+          printf "%s\nn\nn\nn\n\n" "$USER" | bash pre_setup_admin.sh
           echo "✓ Second run completed without error"
+          # Clone dest must still exist and not be doubled
+          test -d "$HOME/dotfiles" || { echo "✗ Clone disappeared on second run"; exit 1; }
+          echo "✓ Clone still present after second run"
 
   ssh_setup:
     name: ssh_setup / ${{ matrix.os }}

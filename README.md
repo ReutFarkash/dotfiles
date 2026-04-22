@@ -180,8 +180,9 @@ What it does:
 - Optionally installs Homebrew and `bash` 5.x
 - Adds the chosen bash to `/etc/shells` (uses `sudo` once — will prompt)
 - Sets the target user's default shell to that bash (`chsh`)
+- Clones the dotfiles repo into the target user's home via HTTPS — no SSH keys required
 
-After this, log in as the target user and run `setup.sh`.
+After this, log in as the target user and run `bash ~/dotfiles/setup.sh`.
 
 ### `ssh_setup.sh` — SSH key and config
 
@@ -280,7 +281,7 @@ Tests run on push to `main` and on all pull requests.
 
 *`pre_setup_admin.sh` tests (macOS and Ubuntu):*
 - Linux: verifies the script exits non-zero with the macOS-only error message
-- macOS: runs non-interactively against the CI runner user (skips CLT/Homebrew installs); verifies `/etc/shells` contains a bash entry and `dscl` reports the user's shell as bash; re-runs to confirm idempotency
+- macOS: runs non-interactively against the CI runner user (skips CLT/Homebrew installs); verifies `/etc/shells` contains a bash entry, `dscl UserShell` reports bash, and the dotfiles repo was cloned with correct ownership; re-runs to confirm idempotency (existing clone is skipped without error)
 
 **`test-windows.yml`** — Windows (Git Bash), minimal and standard profiles:
 - Same core profile checks as above

@@ -11,6 +11,7 @@
 #   2. Optionally installs Homebrew + bash 5.x
 #   3. Adds the chosen bash to /etc/shells (requires sudo — will prompt once)
 #   4. Sets the target user's default shell to that bash (requires sudo)
+#   5. Clones the dotfiles repo into the target user's home (HTTPS, no SSH keys needed)
 
 set -e
 
@@ -148,6 +149,65 @@ else
 fi
 echo ""
 
+# ── 9. Clone dotfiles repo for target user ────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET_HOME="/Users/$target_user"
+CLONE_DEST="$TARGET_HOME/dotfiles"
+
+echo "Dotfiles repo setup for $target_user..."
+
+# Derive a default HTTPS URL from this repo's remote.
+# Normalize SSH remote (git@github.com:User/repo.git) → HTTPS so the clone
+# doesn't need SSH keys set up for the target user.
+_raw_url=$(git -C "$SCRIPT_DIR" config --get remote.origin.url 2>/dev/null || true)
+if [[ "$_raw_url" =~ ^git@([^:]+):(.+)$ ]]; then
+    _default_url="https://${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+elif [[ -n "$_raw_url" ]]; then
+    _default_url="$_raw_url"
+else
+    _default_url="https://github.com/YOUR_USERNAME/dotfiles.git"
+fi
+
+echo ""
+echo "  The dotfiles repo will be cloned into: $CLONE_DEST"
+echo "  Using HTTPS so no SSH keys are required."
+echo "  (Press Enter to use: $_default_url)"
+echo ""
+read -rp "Repo URL [$_default_url]: " repo_url
+repo_url="${repo_url:-$_default_url}"
+
+# Check git is available (requires Xcode CLT)
+if ! git --version >/dev/null 2>&1; then
+    echo "→ git not found — skipping clone. Install Xcode CLT first, then run:"
+    echo "   sudo -u $target_user git clone $repo_url $CLONE_DEST"
+elif [[ -d "$CLONE_DEST" ]]; then
+    echo "→ $CLONE_DEST already exists — skipping clone."
+else
+    # Ensure the target user's home directory exists (macOS creates it on first login;
+    # may be absent if the account was created but never logged into).
+    if [[ ! -d "$TARGET_HOME" ]]; then
+        echo "  Home directory $TARGET_HOME does not exist yet."
+        echo "  Creating it now..."
+        sudo createhomedir -c -u "$target_user" >/dev/null
+        echo "→ Home directory created."
+    fi
+
+    echo "Cloning $repo_url..."
+    if sudo -u "$target_user" git clone "$repo_url" "$CLONE_DEST"; then
+        echo "→ Cloned to $CLONE_DEST"
+        echo "  Ownership: $(ls -ld "$CLONE_DEST" | awk '{print $3":"$4}')"
+    else
+        echo ""
+        echo "  ✗ Clone failed. Possible causes:"
+        echo "    • Private repo: use a Personal Access Token in the URL:"
+        echo "      https://<token>@github.com/User/repo.git"
+        echo "    • No network access"
+        echo "  Once resolved, run manually:"
+        echo "    sudo -u $target_user git clone <url> $CLONE_DEST"
+    fi
+fi
+echo ""
+
 # ── Done ─────────────────────────────────────────────────────────────────────
 echo "======================================"
 echo "  Admin prep complete!"
@@ -155,6 +215,10 @@ echo "======================================"
 echo ""
 echo "Next steps:"
 echo "  1. Log in as '$target_user'"
-echo "  2. Clone the dotfiles repo and run:  bash setup.sh"
+if [[ -d "$CLONE_DEST" ]]; then
+    echo "  2. Run:  bash ~/dotfiles/setup.sh"
+else
+    echo "  2. Clone the dotfiles repo, then run:  bash ~/dotfiles/setup.sh"
+fi
 echo "  3. Or walk them through GUIDE.md §1 for the basics"
 echo ""
