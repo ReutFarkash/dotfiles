@@ -176,13 +176,19 @@ echo ""
 read -rp "Repo URL [$_default_url]: " repo_url
 repo_url="${repo_url:-$_default_url}"
 
-# Check git is available (requires Xcode CLT)
-if ! git --version >/dev/null 2>&1; then
+# Resolve git's full path now, before sudo. sudo uses a restricted PATH
+# that may not include /opt/homebrew/bin where git lives on Apple Silicon.
+_git=$(command -v git 2>/dev/null || true)
+
+if [[ -z "$_git" ]]; then
     echo "→ git not found — skipping clone. Install Xcode CLT first, then run:"
-    echo "   sudo -u $target_user git clone $repo_url $CLONE_DEST"
+    echo "   sudo \$(command -v git) clone $repo_url $CLONE_DEST"
+    echo "   sudo chown -R $target_user:staff $CLONE_DEST"
 elif [[ -d "$CLONE_DEST" ]]; then
     echo "→ $CLONE_DEST already exists — skipping clone."
 else
+    echo "  Using git: $_git"
+
     # Ensure the target user's home directory exists (macOS creates it on first login;
     # may be absent if the account was created but never logged into).
     if [[ ! -d "$TARGET_HOME" ]]; then
@@ -193,10 +199,10 @@ else
     fi
 
     echo "Cloning $repo_url..."
-    # Run clone as root so it can write to the target user's home directory
-    # (which is mode 700 and not writable by other admin accounts).
+    # Run clone as root (full git path passed explicitly — sudo's restricted PATH
+    # may not include /opt/homebrew/bin on Apple Silicon).
     # chown transfers ownership immediately after.
-    if sudo git clone "$repo_url" "$CLONE_DEST"; then
+    if sudo "$_git" clone "$repo_url" "$CLONE_DEST"; then
         sudo chown -R "$target_user":staff "$CLONE_DEST"
         echo "→ Cloned to $CLONE_DEST (owned by $target_user)"
     else
@@ -207,7 +213,7 @@ else
         echo "      https://<token>@github.com/User/repo.git"
         echo "    • No network access"
         echo "  Once resolved, run manually:"
-        echo "    sudo git clone <url> $CLONE_DEST"
+        echo "    sudo \$(command -v git) clone <url> $CLONE_DEST"
         echo "    sudo chown -R $target_user:staff $CLONE_DEST"
     fi
 fi

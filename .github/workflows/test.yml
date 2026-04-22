@@ -36,6 +36,16 @@ jobs:
           # Extra n/empty lines are harmless — unused stdin is silently discarded.
           printf "%s\nn\nn\nn\n\n" "$USER" | bash pre_setup_admin.sh
 
+      - name: macOS — debug state after run
+        if: runner.os == 'macOS'
+        run: |
+          echo "HOME=$HOME  USER=$USER"
+          echo "git path: $(command -v git)"
+          echo "git version: $(git --version)"
+          echo "HOME contents:"
+          ls -la "$HOME/" | head -30
+          echo "Clone dest exists: $(test -d "$HOME/dotfiles" && echo YES || echo NO)"
+
       - name: macOS — verify /etc/shells contains a bash entry
         if: runner.os == 'macOS'
         run: |
