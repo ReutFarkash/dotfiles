@@ -15,7 +15,7 @@ echo ""
 
 # ── 1. Profile ────────────────────────────────────────────────────────────────
 echo "Which profile would you like?"
-echo "  1) full     — everything (dev aliases, WSL/Windows paths, git submodule tools)"
+echo "  1) full     — everything (dev aliases, git power tools, completions) — macOS/Linux"
 echo "  2) standard — git tools, custom prompt, venv scaffolding, machine-specific aliases"
 echo "  3) minimal  — basics only (ls shortcuts, safety nets, simple git)"
 echo ""
@@ -154,7 +154,7 @@ if [[ "$DOTFILES_PROFILE" == "minimal" ]]; then
 elif [[ "$DOTFILES_PROFILE" == "standard" ]]; then
   echo "  3. Your profile is 'standard'. Edit ~/.local_aliases for machine-specific paths."
 else
-  echo "  3. Your profile is 'full'. Run 'more_useful' for a full command list."
+  echo "  3. Your profile is 'full'. Run 'useful' for the full command list."
   echo "     Edit ~/.local_aliases for machine-specific paths."
 fi
 echo ""
