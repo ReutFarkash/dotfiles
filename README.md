@@ -40,12 +40,7 @@ Clean up old leftover files (moves them to an archive folder — nothing is dele
 bash ~/dotfiles/cleanup_home.sh
 ```
 
-Generate a personal command cheat sheet saved to your home folder:
-```bash
-bash ~/dotfiles/generate_cheatsheet.sh
-```
-
-Read the general bash/git/Python guide (Git, venv, SSH, aliases, permissions, and more):
+Read the full bash/git/Python guide (Git, venv, SSH, aliases, permissions, and more):
 ```bash
 less ~/dotfiles/GUIDE.md
 ```
@@ -104,8 +99,6 @@ bash ~/dotfiles/setup.sh
 2. **Username** — personalises the prompt; defaults to your system username
 3. **Git identity** — name and email for commit attribution (skipped if already set)
 4. **Shell switch** *(macOS only)* — offer to change default shell to bash
-5. **Cheat sheet** — offer to generate `~/shell-cheatsheet.md` and `~/shell-cheatsheet.txt`
-
 The repo can live anywhere — not just `~/dotfiles`. `DOTFILES_REPO` in `~/.user_config` tracks the path.
 
 ### Windows (Git Bash)
@@ -220,21 +213,13 @@ What it looks for:
 
 After archiving, run `bootstrap.sh` to re-link any dotfiles that were removed.
 
-### `generate_cheatsheet.sh` — command reference
+### `GUIDE.md` — full reference
 
-Generates a personal command reference based on your current profile.
+A concise guide covering Git, venv, pip, SSH keys, bash aliases, permissions, regex, and more. Readable on GitHub or locally:
 
 ```bash
-bash ~/dotfiles/generate_cheatsheet.sh
+less ~/dotfiles/GUIDE.md
 ```
-
-Produces two files in `~/`:
-- `shell-cheatsheet.md` — Markdown, renders nicely in any viewer
-- `shell-cheatsheet.txt` — plain text, readable with `less ~/shell-cheatsheet.txt`
-
-Both files contain the same content, formatted for their medium. Content is profile-specific — minimal users get the minimal command set, standard users get the full standard set, etc.
-
-Also runs automatically at the end of `setup.sh` (optional).
 
 ---
 
@@ -247,8 +232,6 @@ Also runs automatically at the end of `setup.sh` (optional).
 **Switch profiles** → edit `DOTFILES_PROFILE` in `~/.user_config`, then run `reload`; or re-run `setup.sh` after deleting `~/.user_config`
 
 **Refresh symlinks after a profile change** → `bash ~/dotfiles/bootstrap.sh`
-
-**Refresh cheat sheet after a profile change** → `bash ~/dotfiles/generate_cheatsheet.sh`
 
 **Update dotfiles** → `cd ~/dotfiles && git pull`, then open a new terminal
 

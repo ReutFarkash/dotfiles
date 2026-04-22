@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run setup (non-interactive)
-        run: printf "${{ matrix.choice }}\ntestuser\n\n\nn\n" | bash setup.sh
+        run: printf "${{ matrix.choice }}\ntestuser\n\n\n" | bash setup.sh
 
       - name: Verify user_config
         run: |

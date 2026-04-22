@@ -223,6 +223,21 @@ Three digits: owner / group / everyone else.
 
 **What to know:** Permissions control who can read, write, or execute a file. SSH *enforces* correct permissions — it refuses to use `~/.ssh/config` or private keys if they're world-readable. `chmod 600 file` is the standard fix.
 
+### Running as another user — `sudo` and `su`
+
+```bash
+sudo command                    # run one command as root (you stay as yourself)
+sudo nano /etc/hosts            # edit a system file that needs root access
+sudo !!                         # re-run the last command as root
+sudo -i                         # open a root shell (use sparingly, exit when done)
+
+su username                     # switch to another user account (needs their password)
+su -                            # switch to root (needs root password — disabled on macOS)
+exit                            # return to your previous user
+```
+
+**What to know:** `sudo` ("superuser do") lets you run a single command with root privileges — it asks for *your* password and logs what you did. It's safer than `su` because it's targeted and audited. On macOS, `su -` to root is disabled by default; use `sudo` instead. Don't run things as root unless you need to — a mistake as root has no safety net.
+
 > **Go deeper:** [Unix system calls](https://www.youtube.com/playlist?list=PL993D01B05C47C28D) — Brian Will's playlist explains how Unix handles files, processes, and permissions at the system level.
 
 ### macOS specifics
@@ -291,6 +306,18 @@ git merge feature-x             # merge into current branch
 ---
 
 ## 6. Python — venv and pip
+
+### `python` vs `python3`, `pip` vs `pip3`
+
+```bash
+python3 --version       # check which Python 3 you have
+python3 script.py       # run a script with Python 3
+
+pip3 install requests   # install a package using Python 3's pip
+pip3 --version          # confirm it's tied to Python 3
+```
+
+**What to know:** On most systems, `python` means Python 2 (old, no longer maintained) and `python3` means Python 3. Always use `python3` and `pip3` to be explicit. The exception: once you've activated a venv, both `python` and `pip` inside it refer to the venv's Python 3 — you don't need the `3` suffix. If `python3` isn't found, install it from [python.org](https://www.python.org/downloads/) or via `brew install python` on macOS.
 
 ### Why venv
 
@@ -406,9 +433,53 @@ alias ..="cd .."
 
 They last for the current terminal session. To make them permanent, put them in a file that loads on startup.
 
-### Where to put them in this dotfiles setup
+### Aliases installed by this dotfiles setup
 
-This repo uses profile files for aliases. **Do not edit the profile files directly** — they're shared across machines. Instead, put machine-specific aliases in:
+These are available in your shell after running `setup.sh`:
+
+**Navigation and listing:**
+
+| Alias | Expands to | What it does |
+|---|---|---|
+| `l` | `ls -lhF` | list with details and sizes |
+| `la` | `ls -lahF` | list including hidden files |
+| `ll` | `ls -lhF` | same as `l` |
+| `lr` | `ls -lahtr` | list by date, newest at bottom |
+| `..` | `cd ..` | go up one folder |
+| `...` | `cd ../..` | go up two folders |
+| `~` | `cd ~` | go home |
+
+**Safety nets** — these ask before doing anything destructive:
+
+| Alias | Behaviour |
+|---|---|
+| `rm` | asks `remove file? y/n` before deleting |
+| `cp` | asks before overwriting |
+| `mv` | asks before overwriting |
+
+**Git shortcuts:**
+
+| Alias | Expands to |
+|---|---|
+| `gs` | `git status` |
+| `gp` | `git pull` |
+| `glog` | short visual commit history |
+| `ga` | `git add` |
+| `gc` | `git commit -m` |
+| `gd` | `git diff` |
+| `graph` | `git log --oneline --graph --decorate --all` |
+
+**Shell:**
+
+| Alias | What it does |
+|---|---|
+| `reload` | re-source your shell config without opening a new terminal |
+| `myip` | print your public IP address |
+| `path` | print your PATH one entry per line |
+
+### Where to put your own aliases
+
+This repo uses profile files for shared aliases. **Do not edit the profile files directly** — they're shared across machines. Instead, put machine-specific aliases in:
 
 ```
 ~/.local_aliases        ← your personal machine-specific aliases (created by setup.sh)

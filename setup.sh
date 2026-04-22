@@ -149,21 +149,8 @@ echo ""
 echo "Next steps:"
 echo "  1. Open a new terminal (or run: source ~/.bash_profile)"
 echo "  2. Run 'useful' to see available commands"
-if [[ "$DOTFILES_PROFILE" == "minimal" ]]; then
-  echo "  3. Your profile is 'minimal' — clean and simple."
-elif [[ "$DOTFILES_PROFILE" == "standard" ]]; then
-  echo "  3. Your profile is 'standard'. Edit ~/.local_aliases for machine-specific paths."
-else
-  echo "  3. Your profile is 'full'. Run 'useful' for the full command list."
-  echo "     Edit ~/.local_aliases for machine-specific paths."
-fi
-echo ""
-
-# ── 9. Cheat sheet ────────────────────────────────────────────────────────────
-if [[ -f "$SCRIPT_DIR/generate_cheatsheet.sh" ]]; then
-  read -rp "Generate a personal command cheat sheet in your home folder? [Y/n]: " gen_cs
-  if [[ ! "$gen_cs" =~ ^[Nn]$ ]]; then
-    bash "$SCRIPT_DIR/generate_cheatsheet.sh"
-  fi
+echo "  3. Read GUIDE.md in the repo for a full reference (Git, venv, SSH, aliases, and more)"
+if [[ "$DOTFILES_PROFILE" != "minimal" ]]; then
+  echo "  4. Edit ~/.local_aliases for machine-specific paths and aliases"
 fi
 echo ""
