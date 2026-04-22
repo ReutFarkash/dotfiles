@@ -156,6 +156,85 @@ result=`ls -l`
 
 ---
 
+### PATH — where the shell looks for programs
+
+When you type a command like `git` or `python3`, the shell doesn't search your whole computer. It only checks the directories listed in the `PATH` variable, in order, and runs the first match it finds.
+
+```bash
+echo $PATH
+# /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+#  ^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^  ^^^^^^^^  ^^^^
+#  Homebrew first    common tools    system tools
+```
+
+Each directory is separated by a colon. The shell checks them left to right — whichever directory appears first wins.
+
+```bash
+which git           # shows the full path of the git being used
+which python3       # useful when you have multiple versions installed
+type git            # similar, but also reveals aliases and shell functions
+```
+
+**Adding a directory to PATH:**
+
+```bash
+# In ~/.bash_profile or ~/.bashrc:
+export PATH="$HOME/.local/bin:$PATH"
+#            ^^^^^^^^^^^^^^^^  ^^^^
+#            new directory     keep everything that was there before
+```
+
+The `export` makes the variable available to any child processes (programs you launch from the shell). Without it, the variable exists in the current shell session only.
+
+**What to know:** if you install a tool and the shell says "command not found", the tool's directory is probably not in your PATH. Find where it was installed (`which` won't help here — try the installer's output), then add it to PATH in your `~/.bash_profile`.
+
+---
+
+### Inspecting the environment — `printenv` and `env`
+
+Environment variables are the key-value pairs your shell passes to every program it starts. Things like `HOME`, `USER`, `PATH`, `SHELL`, and any variables you `export`.
+
+```bash
+printenv                    # list all environment variables
+printenv PATH               # print one specific variable
+printenv HOME USER SHELL    # print several at once
+
+env                         # same as printenv (slightly different output format)
+```
+
+```bash
+# Check if a variable is set (and what it contains):
+echo $DOTFILES_PROFILE      # empty if not set
+printenv DOTFILES_PROFILE   # exits non-zero if not set — useful in scripts
+```
+
+**Common variables worth knowing:**
+
+| Variable | What it holds |
+|---|---|
+| `HOME` | Your home directory (`/Users/yourname`) |
+| `USER` | Your username |
+| `PATH` | Colon-separated list of directories to search for programs |
+| `SHELL` | The path to your current shell (`/bin/bash`, `/bin/zsh`, etc.) |
+| `EDITOR` | The default text editor (used by git, cron, etc.) |
+| `LANG` | Language and locale settings |
+| `PS1` | Your shell prompt string |
+
+**Temporary vs permanent:**
+
+```bash
+# Temporary — lasts only for this shell session:
+export MY_VAR="hello"
+
+# Permanent — add to ~/.bash_profile or ~/.bashrc:
+export MY_VAR="hello"   # same line, different file
+
+# One-off — set a variable for a single command only:
+MY_VAR="hello" some_command
+```
+
+---
+
 ## 3. Editing files — nano
 
 ```bash
