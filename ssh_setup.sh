@@ -16,9 +16,9 @@ OS="$(uname)"
 # ── 1. Ensure ~/.ssh exists with correct permissions ─────────────────────────
 if [[ ! -d "$HOME/.ssh" ]]; then
     mkdir -p "$HOME/.ssh"
-    chmod 700 "$HOME/.ssh"
     echo "→ Created ~/.ssh"
 fi
+chmod 700 "$HOME/.ssh"
 
 # ── 2. SSH key generation ────────────────────────────────────────────────────
 DEFAULT_KEY="$HOME/.ssh/id_ed25519"
