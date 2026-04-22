@@ -6,6 +6,53 @@ on:
   pull_request:
 
 jobs:
+  ssh_setup:
+    name: ssh_setup / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre-create SSH key (bypass interactive ssh-keygen)
+        run: ssh-keygen -t ed25519 -N "" -f "$HOME/.ssh/id_ed25519" -C "test@ci"
+
+      - name: Run ssh_setup (key exists path — no agent, yes host alias)
+        # Inputs: skip agent → N, add host alias → y, alias name, hostname, user
+        run: printf "N\ny\nmyserver\n192.168.1.100\ntestuser\n" | bash ssh_setup.sh
+
+      - name: Verify ~/.ssh/config was created with correct content
+        run: |
+          test -f "$HOME/.ssh/config" || { echo "✗ ~/.ssh/config missing"; exit 1; }
+          echo "✓ ~/.ssh/config exists"
+          grep -q "^Host myserver$" "$HOME/.ssh/config" || { echo "✗ Host myserver not in config"; exit 1; }
+          echo "✓ Host myserver present"
+          grep -q "HostName 192.168.1.100" "$HOME/.ssh/config" || { echo "✗ HostName missing"; exit 1; }
+          echo "✓ HostName correct"
+          grep -q "User testuser" "$HOME/.ssh/config" || { echo "✗ User missing"; exit 1; }
+          echo "✓ User correct"
+          grep -q "IdentityFile" "$HOME/.ssh/config" || { echo "✗ IdentityFile missing"; exit 1; }
+          echo "✓ IdentityFile present"
+
+      - name: Verify ~/.ssh and config permissions
+        run: |
+          ssh_perms=$(stat -c "%a" "$HOME/.ssh" 2>/dev/null || stat -f "%OLp" "$HOME/.ssh")
+          [ "$ssh_perms" = "700" ] || { echo "✗ ~/.ssh has perms $ssh_perms, want 700"; exit 1; }
+          echo "✓ ~/.ssh is 700"
+          cfg_perms=$(stat -c "%a" "$HOME/.ssh/config" 2>/dev/null || stat -f "%OLp" "$HOME/.ssh/config")
+          [ "$cfg_perms" = "600" ] || { echo "✗ ~/.ssh/config has perms $cfg_perms, want 600"; exit 1; }
+          echo "✓ ~/.ssh/config is 600"
+
+      - name: Verify duplicate host alias is not added on re-run
+        run: |
+          printf "N\ny\nmyserver\n192.168.1.100\ntestuser\n" | bash ssh_setup.sh
+          count=$(grep -c "^Host myserver$" "$HOME/.ssh/config")
+          [ "$count" -eq 1 ] || { echo "✗ Expected 1 Host myserver block, found $count"; exit 1; }
+          echo "✓ No duplicate host alias after re-run"
+
   setup:
     name: ${{ matrix.profile }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

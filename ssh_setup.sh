@@ -47,15 +47,13 @@ echo ""
 cat "${DEFAULT_KEY}.pub"
 echo ""
 
-# Clipboard copy — macOS uses pbcopy, Linux tries xclip then wl-copy
-if [[ "$OS" == "Darwin" ]]; then
-    pbcopy < "${DEFAULT_KEY}.pub"
+# Clipboard copy — macOS uses pbcopy, Linux tries xclip then wl-copy.
+# All branches use `if` so a missing/failing clipboard tool doesn't abort under set -e.
+if [[ "$OS" == "Darwin" ]] && pbcopy < "${DEFAULT_KEY}.pub" 2>/dev/null; then
     echo "→ Public key copied to clipboard."
-elif command -v xclip >/dev/null 2>&1; then
-    xclip -selection clipboard < "${DEFAULT_KEY}.pub"
+elif command -v xclip >/dev/null 2>&1 && xclip -selection clipboard < "${DEFAULT_KEY}.pub" 2>/dev/null; then
     echo "→ Public key copied to clipboard (xclip)."
-elif command -v wl-copy >/dev/null 2>&1; then
-    wl-copy < "${DEFAULT_KEY}.pub"
+elif command -v wl-copy >/dev/null 2>&1 && wl-copy < "${DEFAULT_KEY}.pub" 2>/dev/null; then
     echo "→ Public key copied to clipboard (wl-copy)."
 else
     echo "  (Clipboard not available — copy it manually from above.)"

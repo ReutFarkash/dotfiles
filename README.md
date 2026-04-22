@@ -1,8 +1,27 @@
 # dotfiles
 
-Bash dotfiles for macOS, Linux/WSL, and Windows (Git Bash). Three profiles — pick the one that fits.
+Bash dotfiles for macOS and Linux. Three profiles — pick the one that fits.
 
 CI: ![macOS + Ubuntu](https://github.com/ReutFarkash/dotfiles/actions/workflows/test.yml/badge.svg) ![Windows](https://github.com/ReutFarkash/dotfiles/actions/workflows/test-windows.yml/badge.svg)
+
+---
+
+## TL;DR — Quick start
+
+Open **Terminal** and paste these two lines:
+
+```bash
+git clone https://github.com/ReutFarkash/dotfiles.git ~/dotfiles
+bash ~/dotfiles/setup.sh
+```
+
+When it asks **"Which profile?"**, type **`3`** and press Enter.  
+Press Enter for everything else — the defaults are fine.
+
+Close and reopen Terminal. Done.  
+Type `useful` to see what's available.
+
+> **macOS only:** If it asks to install Git, click Install and run the second line again once it finishes.
 
 ---
 
@@ -33,11 +52,13 @@ Everything in minimal, plus:
 
 Everything in standard, plus:
 
-- Windows/WSL path detection (`Cpath`, `Epath`, etc.)
-- Git submodule tools and state save/restore (`lazygit.sh`)
+- `debug_true` / `debug_false` — toggle DEBUG output
+- `printgit_true` / `printgit_false` — toggle git prompt
+- `bootstrap` — re-run symlink setup from anywhere
+- `update_aliases` — reload `.bash_aliases` without opening a new terminal
+- Git submodule tools and state save/restore (`lazygit.sh`, `graph_submodules.sh`)
 - Bash completion for [Hydra](https://hydra.cc) ML framework
 - ActivityWatch terminal time-tracking integration
-- `useful` and `more_useful` command cheatsheets
 
 ---
 
@@ -46,7 +67,7 @@ Everything in standard, plus:
 ### New machine
 
 ```bash
-git clone git@github.com:ReutFarkash/dotfiles.git ~/dotfiles
+git clone https://github.com/ReutFarkash/dotfiles.git ~/dotfiles
 bash ~/dotfiles/setup.sh
 ```
 
@@ -124,6 +145,21 @@ Open **Git Bash** (not PowerShell or cmd) and run the same command. The script d
 
 These can be run at any time from the repo root.
 
+### `ssh_setup.sh` — SSH key and config
+
+Guided SSH key setup and `~/.ssh/config` host alias scaffolding. Safe to re-run — skips key generation if a key already exists, and won't add a duplicate host alias.
+
+```bash
+bash ~/dotfiles/ssh_setup.sh
+```
+
+What it does:
+- Generates an `ed25519` key at `~/.ssh/id_ed25519` (if none exists)
+- Displays the public key and copies it to the clipboard
+- Optionally adds the key to `ssh-agent` (macOS: persists via Keychain)
+- Optionally adds a named host block to `~/.ssh/config` — sets `HostName`, `User`, `IdentityFile`; on macOS also adds `UseKeychain yes` and `AddKeysToAgent yes`
+- Creates `~/.ssh/` (mode 700) and `~/.ssh/config` (mode 600) with correct permissions
+
 ### `audit_home.sh` — health check
 
 Scans the home directory and reports issues. **Never changes anything.**
@@ -175,15 +211,6 @@ Also runs automatically at the end of `setup.sh` (optional).
 
 ---
 
-## SSH and Git setup
-
-These scripts are coming soon:
-
-- `ssh_setup.sh` — guided setup for GitHub SSH keys, SSH agent, and `~/.ssh/config` host aliases. Works on macOS and Windows (Git Bash). Privilege-aware: explains clearly what requires admin and what doesn't.
-- `pre_setup_admin.sh` — run this as admin *before* handing a machine to a new user. Handles things that need elevated rights (adding bash to `/etc/shells`, running `chsh`).
-
----
-
 ## Customisation
 
 **Machine-specific aliases and paths** → edit `~/.local_aliases`
@@ -204,7 +231,9 @@ These scripts are coming soon:
 
 Tests run on push to `main` and on all pull requests.
 
-**`test.yml`** — macOS and Ubuntu, all three profiles:
+**`test.yml`** — macOS and Ubuntu:
+
+*Profile tests (all three profiles):*
 - Runs `setup.sh` non-interactively
 - Verifies profile-aware symlinks (minimal doesn't get full-only files, etc.)
 - Syntax checks all shell files
@@ -214,6 +243,13 @@ Tests run on push to `main` and on all pull requests.
 - Verifies `PRINTGIT=true` for standard and full profiles
 - Runs `setup.sh` a second time to confirm idempotency
 
+*`ssh_setup.sh` tests (macOS and Ubuntu):*
+- Pre-creates an SSH key pair to exercise the "key already exists" path
+- Runs `ssh_setup.sh` non-interactively with a host alias
+- Verifies `~/.ssh/config` was created with the correct `Host`, `HostName`, `User`, and `IdentityFile` entries
+- Verifies `~/.ssh/` is mode 700 and `~/.ssh/config` is mode 600
+- Runs `ssh_setup.sh` again and verifies no duplicate host block is added
+
 **`test-windows.yml`** — Windows (Git Bash), minimal and standard profiles:
-- Same core checks as above
+- Same core profile checks as above
 - Only triggers when code files change (skips on doc-only commits via `paths-ignore`)
