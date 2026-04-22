@@ -110,7 +110,7 @@ _info "Local config files (~/.local_aliases, ~/.venv_aliases_local) reviewed"
 
 # ── 4. Duplicate or leftover archive folders ─────────────────────────────────
 _head "Old Archive Folders in ~/"
-archive_count=$(find ~/archive -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
+archive_count=$(find ~/archive -maxdepth 1 -mindepth 1 -type d 2>/dev/null | wc -l | tr -d ' ' || echo 0)
 if [[ "$archive_count" -gt 5 ]]; then
     echo -e "  ${YELLOW}⚠${NC} You have $archive_count archive folders in ~/archive/"
     _info "Consider reviewing ~/archive/ manually — this script won't touch existing archives."
