@@ -45,6 +45,11 @@ Generate a personal command cheat sheet saved to your home folder:
 bash ~/dotfiles/generate_cheatsheet.sh
 ```
 
+Read the general bash/git/Python guide (Git, venv, SSH, aliases, permissions, and more):
+```bash
+less ~/dotfiles/GUIDE.md
+```
+
 ---
 
 ## Profiles
