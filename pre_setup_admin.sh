@@ -193,27 +193,23 @@ else
     fi
 
     echo "Cloning $repo_url..."
-    # Clone as the current admin user (who has git and network configured),
-    # then hand ownership to the target user. Using sudo -u <target> git clone
-    # is unreliable when the target account has not yet had a login session.
-    clone_err=$(mktemp)
-    if git clone "$repo_url" "$CLONE_DEST" 2>"$clone_err"; then
+    # Run clone as root so it can write to the target user's home directory
+    # (which is mode 700 and not writable by other admin accounts).
+    # chown transfers ownership immediately after.
+    if sudo git clone "$repo_url" "$CLONE_DEST"; then
         sudo chown -R "$target_user":staff "$CLONE_DEST"
         echo "→ Cloned to $CLONE_DEST (owned by $target_user)"
     else
         echo ""
-        echo "  ✗ Clone failed:"
-        sed 's/^/    /' "$clone_err"
-        echo ""
+        echo "  ✗ Clone failed (see git output above)."
         echo "  Possible causes:"
         echo "    • Private repo — embed a Personal Access Token:"
         echo "      https://<token>@github.com/User/repo.git"
         echo "    • No network access"
-        echo "  Once resolved, clone and fix ownership manually:"
-        echo "    git clone <url> $CLONE_DEST"
+        echo "  Once resolved, run manually:"
+        echo "    sudo git clone <url> $CLONE_DEST"
         echo "    sudo chown -R $target_user:staff $CLONE_DEST"
     fi
-    rm -f "$clone_err"
 fi
 echo ""
 
