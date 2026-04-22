@@ -234,11 +234,13 @@ After archiving, run `bootstrap.sh` to re-link any dotfiles that were removed.
 
 ### `GUIDE.md` — full reference
 
-A concise guide covering Git, venv, pip, SSH keys, bash aliases, permissions, regex, and more. Readable on GitHub or locally:
+A practical reference for technically-minded users new to bash. Readable on GitHub or locally:
 
 ```bash
 less ~/dotfiles/GUIDE.md
 ```
+
+Sections: terminal basics · shell concepts (variables, quotes, PATH, environment, pipes and redirection) · nano · users and permissions · Git · Python/venv/pip · SSH keys · bash aliases · regular expressions · keyboard shortcuts
 
 ---
 
