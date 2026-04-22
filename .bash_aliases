@@ -18,6 +18,7 @@ fi
 
 # Full profile: load base aliases first so navigation, ls, safety, and git basics are always present
 [[ -f "${DOTFILES_REPO}/profiles/minimal.sh" ]] && source "${DOTFILES_REPO}/profiles/minimal.sh"
+export PRINTGIT=true
 
 is_gitbash_admin() {
     if net session &>/dev/null; then

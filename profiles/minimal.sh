@@ -29,3 +29,25 @@ alias path='echo -e ${PATH//:/\\n}'  # show PATH one entry per line
 alias gs="git status"
 alias gp="git pull"
 alias glog="git log --oneline --graph --decorate -10"
+
+# ── Help ──────────────────────────────────────────────────────────────────────
+useful() {
+    echo ''
+    echo 'NAVIGATION'
+    echo '  ..  ...  ~             go up one/two dirs, go home'
+    echo '  l   la   lr            list files (lr = newest at bottom)'
+    echo ''
+    echo 'GIT'
+    echo '  gs                    git status'
+    echo '  gp                    git pull'
+    echo '  glog                  short visual log'
+    echo ''
+    echo 'SHELL'
+    echo '  reload                re-load shell config'
+    echo '  myip                  show your IP address'
+    echo '  path                  show PATH entries one per line'
+    echo '  useful                show this help'
+    echo ''
+}
+
+useful
