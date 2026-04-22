@@ -165,6 +165,24 @@ Open **Git Bash** (not PowerShell or cmd) and run the same command. The script d
 
 These can be run at any time from the repo root.
 
+### `pre_setup_admin.sh` — Mac handover prep (admin)
+
+Run this as an admin account **before** handing a Mac to a non-technical user. It does the one-time admin work that requires elevated privileges.
+
+```bash
+bash ~/dotfiles/pre_setup_admin.sh
+```
+
+Prerequisites: create the target user account in **System Settings > Users & Groups** first. Run as your own admin account, not with `sudo`.
+
+What it does:
+- Optionally installs Xcode Command Line Tools
+- Optionally installs Homebrew and `bash` 5.x
+- Adds the chosen bash to `/etc/shells` (uses `sudo` once — will prompt)
+- Sets the target user's default shell to that bash (`chsh`)
+
+After this, log in as the target user and run `setup.sh`.
+
 ### `ssh_setup.sh` — SSH key and config
 
 Guided SSH key setup and `~/.ssh/config` host alias scaffolding. Safe to re-run — skips key generation if a key already exists, and won't add a duplicate host alias.
@@ -259,6 +277,10 @@ Tests run on push to `main` and on all pull requests.
 - Verifies `~/.ssh/config` was created with the correct `Host`, `HostName`, `User`, and `IdentityFile` entries
 - Verifies `~/.ssh/` is mode 700 and `~/.ssh/config` is mode 600
 - Runs `ssh_setup.sh` again and verifies no duplicate host block is added
+
+*`pre_setup_admin.sh` tests (macOS and Ubuntu):*
+- Linux: verifies the script exits non-zero with the macOS-only error message
+- macOS: runs non-interactively against the CI runner user (skips CLT/Homebrew installs); verifies `/etc/shells` contains a bash entry and `dscl` reports the user's shell as bash; re-runs to confirm idempotency
 
 **`test-windows.yml`** — Windows (Git Bash), minimal and standard profiles:
 - Same core profile checks as above

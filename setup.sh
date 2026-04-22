@@ -121,6 +121,15 @@ echo ""
 
 # ── 8. Optionally switch default shell to bash (macOS only) ──────────────────
 if [[ "$(uname)" == "Darwin" ]]; then
+  # Prefer Homebrew bash (5.x) if available; fall back to system bash (3.2)
+  if [[ -x /opt/homebrew/bin/bash ]]; then
+    SETUP_BASH=/opt/homebrew/bin/bash
+  elif [[ -x /usr/local/bin/bash ]]; then
+    SETUP_BASH=/usr/local/bin/bash
+  else
+    SETUP_BASH=/bin/bash
+  fi
+
   current_shell="$(dscl . -read /Users/"$USER" UserShell 2>/dev/null | awk '{print $2}')"
   if [[ "$current_shell" != *bash* ]]; then
     echo "Your default shell is: $current_shell"
@@ -128,12 +137,16 @@ if [[ "$(uname)" == "Darwin" ]]; then
     echo "Would you like to switch your default shell to bash?"
     read -rp "Switch to bash? [y/N]: " switch_shell
     if [[ "$switch_shell" =~ ^[Yy]$ ]]; then
-      chsh -s /bin/bash "$USER"
-      echo "→ Default shell changed to /bin/bash"
+      # Ensure the chosen bash is listed in /etc/shells before chsh
+      if ! grep -qxF "$SETUP_BASH" /etc/shells 2>/dev/null; then
+        echo "$SETUP_BASH" | sudo tee -a /etc/shells >/dev/null
+      fi
+      chsh -s "$SETUP_BASH" "$USER"
+      echo "→ Default shell changed to $SETUP_BASH"
       echo "   Open a new terminal window for this to take effect."
     else
       echo "→ Keeping $current_shell. Note: .bash_profile will not load by default."
-      echo "   You can change this later with: chsh -s /bin/bash"
+      echo "   You can change this later with: chsh -s $SETUP_BASH"
     fi
   else
     echo "→ Default shell is already bash. Good."

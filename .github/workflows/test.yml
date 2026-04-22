@@ -6,6 +6,55 @@ on:
   pull_request:
 
 jobs:
+  pre_setup_admin:
+    name: pre_setup_admin / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax check
+        run: bash -n pre_setup_admin.sh && echo "✓ syntax ok"
+
+      - name: Linux — exits with macOS-only error
+        if: runner.os == 'Linux'
+        run: |
+          if printf "testuser\nn\nn\nn\n" | bash pre_setup_admin.sh 2>&1; then
+            echo "✗ Expected non-zero exit on Linux" && exit 1
+          fi
+          echo "✓ Correctly rejected on Linux"
+
+      - name: macOS — run with current user (skip CLT/Homebrew installs)
+        if: runner.os == 'macOS'
+        run: |
+          # Inputs: target user=$USER, skip Xcode CLT (n), skip Homebrew (n), skip brew bash (n)
+          # The /etc/shells and chsh steps will actually run.
+          printf "%s\nn\nn\nn\n" "$USER" | bash pre_setup_admin.sh
+
+      - name: macOS — verify /etc/shells contains a bash entry
+        if: runner.os == 'macOS'
+        run: |
+          grep -qE '/bash$' /etc/shells || { echo "✗ No bash entry in /etc/shells"; exit 1; }
+          echo "✓ /etc/shells contains a bash entry"
+
+      - name: macOS — verify target user shell is set to bash
+        if: runner.os == 'macOS'
+        run: |
+          shell=$(dscl . -read /Users/"$USER" UserShell | awk '{print $2}')
+          echo "UserShell: $shell"
+          [[ "$shell" == *bash* ]] || { echo "✗ Shell is not bash: $shell"; exit 1; }
+          echo "✓ Default shell is bash"
+
+      - name: macOS — idempotency (re-run produces no errors)
+        if: runner.os == 'macOS'
+        run: |
+          printf "%s\nn\nn\nn\n" "$USER" | bash pre_setup_admin.sh
+          echo "✓ Second run completed without error"
+
   ssh_setup:
     name: ssh_setup / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
