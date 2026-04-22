@@ -50,4 +50,4 @@ useful() {
     echo ''
 }
 
-[[ "${DOTFILES_PROFILE}" == "standard" ]] && useful
+if [[ "${DOTFILES_PROFILE}" == "standard" ]]; then useful; fi

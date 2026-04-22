@@ -50,4 +50,4 @@ useful() {
     echo ''
 }
 
-[[ "${DOTFILES_PROFILE}" == "minimal" ]] && useful
+if [[ "${DOTFILES_PROFILE}" == "minimal" ]]; then useful; fi
