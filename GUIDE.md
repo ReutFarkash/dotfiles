@@ -75,6 +75,8 @@ cd -            # go back to the previous directory
 
 **What to know:** Files starting with `.` are hidden — `ls` won't show them unless you pass `-a`. Most config files (`.bashrc`, `.ssh/`) are hidden.
 
+> **Go deeper:** [Unix terminals and shells](https://www.youtube.com/playlist?list=PLFAC320731F539902) — Brian Will's playlist covers how the terminal, shell, and Unix process model actually work.
+
 ---
 
 ### Reading files — `less` and `cat`
@@ -221,6 +223,8 @@ Three digits: owner / group / everyone else.
 
 **What to know:** Permissions control who can read, write, or execute a file. SSH *enforces* correct permissions — it refuses to use `~/.ssh/config` or private keys if they're world-readable. `chmod 600 file` is the standard fix.
 
+> **Go deeper:** [Unix system calls](https://www.youtube.com/playlist?list=PL993D01B05C47C28D) — Brian Will's playlist explains how Unix handles files, processes, and permissions at the system level.
+
 ### macOS specifics
 
 ```bash
@@ -277,6 +281,12 @@ git merge feature-x             # merge into current branch
 ```
 
 **What to know:** Git tracks *snapshots* of your project, not file diffs. `add` stages what you want in the next snapshot; `commit` takes it; `push` uploads it to GitHub. Commits are permanent and can always be recovered — don't be afraid to commit often.
+
+> **Go deeper:**
+> - [Introduction to Git - Core Concepts](https://www.youtube.com/watch?v=uR6G2v_WsRA) — David Mahler
+> - [Introduction to Git - Branching and Merging](https://www.youtube.com/watch?v=FyAAIHHClqI) — David Mahler
+> - [Introduction to Git - Remotes](https://www.youtube.com/watch?v=Gg4bLk8cGNo) — David Mahler
+> - [A Visual Git Reference](https://marklodato.github.io/visual-git-guide/index-en.html) — diagrams showing exactly what each Git command does to your working directory, staging area, and history
 
 ---
 
