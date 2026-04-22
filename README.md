@@ -15,13 +15,35 @@ git clone https://github.com/ReutFarkash/dotfiles.git ~/dotfiles
 bash ~/dotfiles/setup.sh
 ```
 
-When it asks **"Which profile?"**, type **`3`** and press Enter.  
-Press Enter for everything else — the defaults are fine.
+When it asks **"Which profile?"**, just press Enter — the default (`standard`) is the right choice.  
+Press Enter for everything else too — the defaults are fine.
 
 Close and reopen Terminal. Done.  
 Type `useful` to see what's available.
 
 > **macOS only:** If it asks to install Git, click Install and run the second line again once it finishes.
+
+### Other things you can run anytime
+
+Set up your SSH key (needed to connect to GitHub or remote servers):
+```bash
+bash ~/dotfiles/ssh_setup.sh
+```
+
+Check your home folder for broken or misconfigured files:
+```bash
+bash ~/dotfiles/audit_home.sh
+```
+
+Clean up old leftover files (moves them to an archive folder — nothing is deleted):
+```bash
+bash ~/dotfiles/cleanup_home.sh
+```
+
+Generate a personal command cheat sheet saved to your home folder:
+```bash
+bash ~/dotfiles/generate_cheatsheet.sh
+```
 
 ---
 
