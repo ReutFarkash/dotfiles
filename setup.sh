@@ -83,7 +83,13 @@ echo "Installing dotfile symlinks..."
 bash "$SCRIPT_DIR/bootstrap.sh"
 echo ""
 
-# ── 7. Git identity ───────────────────────────────────────────────────────────
+# ── 7. Global gitignore ───────────────────────────────────────────────────────
+echo "Configuring global gitignore..."
+git config --global core.excludesfile "$HOME/.gitignore_global"
+echo "→ core.excludesfile set to ~/.gitignore_global"
+echo ""
+
+# ── 8. Git identity ──────────────────────────────────────────────────────────
 echo "Checking Git identity..."
 git_name=$(git config --global user.name 2>/dev/null || echo "")
 git_email=$(git config --global user.email 2>/dev/null || echo "")
@@ -119,7 +125,7 @@ if [[ -z "$git_name" || -z "$git_email" ]]; then
 fi
 echo ""
 
-# ── 8. Optionally switch default shell to bash (macOS only) ──────────────────
+# ── 9. Optionally switch default shell to bash (macOS only) ──────────────────
 if [[ "$(uname)" == "Darwin" ]]; then
   # Prefer Homebrew bash (5.x) if available; fall back to system bash (3.2)
   if [[ -x /opt/homebrew/bin/bash ]]; then

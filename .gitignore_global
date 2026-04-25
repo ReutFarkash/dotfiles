@@ -1,0 +1,15 @@
+# Global gitignore — applies to every git repo on this machine.
+# Managed by the dotfiles repo. Do not edit manually.
+# Configure via: git config --global core.excludesfile ~/.gitignore_global
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Editor
+*.code-workspace
+*.swp
+*~

@@ -9,6 +9,7 @@ FILES_MINIMAL=(
     "$DIR/.bash_aliases"
     "$DIR/.bash_profile"
     "$DIR/.bash_logout"
+    "$DIR/.gitignore_global"
 )
 GIT_SCRIPTS_MINIMAL=()
 

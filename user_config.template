@@ -1,0 +1,16 @@
+# ~/.user_config — machine/user-specific settings, not committed to git.
+# Run setup.sh to generate this automatically, or copy this file and fill in manually.
+#
+# After editing, run bootstrap.sh to apply symlinks.
+
+# Your local username — used to personalise the prompt
+export LOCAL_USERNAME=""
+
+# Which alias set to load: minimal | standard | full
+export DOTFILES_PROFILE="standard"
+
+# Absolute path to where you cloned this repo
+export DOTFILES_REPO="$HOME/dotfiles"
+
+# Optional: root of your code directory (used by some aliases in .local_aliases)
+# export CODE_BASE="$HOME/Code"
