@@ -18,8 +18,8 @@ unset file;
 
 [[ -f ~/manager.sh ]] && source ~/manager.sh
 
-# History: append across sessions, sync on every prompt
-PROMPT_COMMAND='history -a; history -n; history -w'
+# History: append to whatever .bash_prompt already set (e.g. prompt_command)
+PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND}; }history -a; history -n; history -w"
 shopt -s histappend;
 
 # ActivityWatch terminal watcher (opt-out: set AW_DISABLE_TERMINAL_WATCHER=1)
